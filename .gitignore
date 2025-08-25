@@ -127,3 +127,5 @@ junit.xml
 *.out
 *.DS_Store
 .envrc
+
+venv
