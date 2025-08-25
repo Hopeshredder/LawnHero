@@ -22,3 +22,109 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# ========================
+# Python / Django
+# ========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.log
+*.pot
+*.mo
+*.pyc
+*.sqlite3
+db.sqlite3
+instance/
+*.db
+*.bak
+
+# Django specific
+media/
+staticfiles/
+.env
+.env.local
+*.pem
+*.crt
+*.key
+
+# Migrations (optional — keep if you want history in VCS)
+# Uncomment if you don’t want them tracked:
+# */migrations/*.py
+# !*/migrations/__init__.py
+
+# ========================
+# Node / React
+# ========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+package-lock.json
+yarn.lock
+.pnp/
+.pnp.js
+
+# React build output
+/build
+/dist
+.cache/
+.next/
+out/
+
+# ========================
+# IDEs / Editors
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.bak
+*.tmp
+
+# ========================
+# OS Files
+# ========================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+Desktop.ini
+
+# ========================
+# Docker
+# ========================
+*.pid
+*.seed
+*.pid.lock
+docker-compose.override.yml
+
+# ========================
+# Coverage / Testing
+# ========================
+.coverage
+.tox/
+.nox/
+htmlcov/
+.pytest_cache/
+coverage.xml
+junit.xml
+
+# ========================
+# Misc
+# ========================
+*.log
+*.csv
+*.tsv
+*.out
+*.DS_Store
+.envrc
