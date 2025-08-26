@@ -1,5 +1,5 @@
 from django.urls import path
-from UserApp.views import Login, Logout, SignUp, AuthMe, Info
+from users_app.views import Login, Logout, SignUp, AuthMe, Info
 
 urlpatterns = [
     path("login/", Login.as_view()),
