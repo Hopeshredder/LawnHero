@@ -1,13 +1,14 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import Logo from "../assets/images/logo.png";
 
-// PublicNav is a layout wrapper for pages accessible without authentication, providdes nav bar functionality
-export default function PublicNav() {
+// PrivateNav is a layout wrapper for pages accessible WITH authentication, provides nav bar functionality
+export default function PrivateNav() {
   const location = useLocation();
 
-  const isHome = location.pathname === "/";
-  const isLogin = location.pathname === "/login";
-  const isRegister = location.pathname === "/register";
+  const isTodo = location.pathname === "/todo";
+  const isSuperTips = location.pathname === "/supertips";
+  const isDashboard = location.pathname === "/dashboard";
+  const isSettings = location.pathname === "/settings";
 
   return (
     <div
@@ -31,9 +32,9 @@ export default function PublicNav() {
 
         {/* Navbar links */}
         <div className="flex space-x-4">
-          {!isHome && (
+          {!isTodo && (
             <Link
-              to="/"
+              to="/todo"
               className="px-3 py-1 rounded-md transition duration-200"
               style={{ color: "var(--color-lightest)" }}
               onMouseEnter={(e) =>
@@ -43,13 +44,13 @@ export default function PublicNav() {
                 (e.currentTarget.style.color = "var(--color-lightest)")
               }
             >
-              Home
+              Todo
             </Link>
           )}
 
-          {!isLogin && (
+          {!isSuperTips && (
             <Link
-              to="/login"
+              to="/supertips"
               className="px-3 py-1 rounded-md transition duration-200"
               style={{ color: "var(--color-lightest)" }}
               onMouseEnter={(e) =>
@@ -59,13 +60,13 @@ export default function PublicNav() {
                 (e.currentTarget.style.color = "var(--color-lightest)")
               }
             >
-              Login
+              Super Tips
             </Link>
           )}
 
-          {!isRegister && (
+          {!isDashboard && (
             <Link
-              to="/register"
+              to="/dashboard"
               className="px-3 py-1 rounded-md transition duration-200"
               style={{ color: "var(--color-lightest)" }}
               onMouseEnter={(e) =>
@@ -75,7 +76,23 @@ export default function PublicNav() {
                 (e.currentTarget.style.color = "var(--color-lightest)")
               }
             >
-              Register
+              Dashboard
+            </Link>
+          )}
+
+          {!isSettings && (
+            <Link
+              to="/settings"
+              className="px-3 py-1 rounded-md transition duration-200"
+              style={{ color: "var(--color-lightest)" }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.color = "var(--color-medium)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.color = "var(--color-lightest)")
+              }
+            >
+              Settings
             </Link>
           )}
         </div>
