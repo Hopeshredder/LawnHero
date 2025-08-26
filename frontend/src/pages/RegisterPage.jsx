@@ -1,8 +1,7 @@
-import "./App.css";
-
 import { useState } from "react";
+import { registerUser } from "../Api";
 
-const App = () => {
+const RegisterPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -70,4 +69,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default RegisterPage;
