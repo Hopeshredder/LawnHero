@@ -24,47 +24,91 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-[#DAD7CD] text-[#344E41]">
-      <h1 className="text-[#3A5A40] text-2xl mb-4">Register</h1>
-      <div className="mb-4 w-64">
-        <label htmlFor="email" className="block mb-1 text-[#588157]">
-          Email
-        </label>
-        <input
-          type="text"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2 border border-[#A3B18A] bg-[#A3B18A] text-[#344E41]"
-        />
-      </div>
-      <div className="mb-4 w-64">
-        <label htmlFor="password" className="block mb-1 text-[#588157]">
-          Password
-        </label>
-        <input
-          type="password"
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 border border-[#A3B18A] bg-[#A3B18A] text-[#344E41]"
-        />
-      </div>
-      <div>
-        <label htmlFor="name">Full Name</label>
-        <input
-          type="name"
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full p-2 border border-[#A3B18A] bg-[#A3B18A] text-[#344E41]"
-        />
-      </div>
-      <button
-        onClick={handleRegister}
-        className="px-4 py-2 bg-[#3A5A40] text-[#DAD7CD] cursor-pointer">
+    <div
+      className="flex flex-col items-center justify-start min-h-screen pt-16 px-4"
+      style={{
+        backgroundColor: "var(--color-lightest)",
+        color: "var(--color-darkest)",
+      }}
+    >
+      <h1
+        className="text-4xl font-extrabold mb-8"
+        style={{ color: "var(--color-medium)" }}
+      >
         Register
-      </button>
+      </h1>
+
+      {error && <p className="mb-4 text-red-600 font-medium">{error}</p>}
+
+      <div className="flex flex-col space-y-4 w-full max-w-sm">
+        <div>
+          <label
+            htmlFor="name"
+            className="block mb-1 font-medium"
+            style={{ color: "var(--color-dark)" }}
+          >
+            Full Name
+          </label>
+          <input
+            type="text"
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full p-3 rounded border border-var(--color-medium) bg-var(--color-light) text-var(--color-darkest) focus:outline-none focus:ring-2 focus:ring-var(--color-medium)"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="email"
+            className="block mb-1 font-medium"
+            style={{ color: "var(--color-dark)" }}
+          >
+            Email
+          </label>
+          <input
+            type="text"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-3 rounded border border-var(--color-medium) bg-var(--color-light) text-var(--color-darkest) focus:outline-none focus:ring-2 focus:ring-var(--color-medium)"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="password"
+            className="block mb-1 font-medium"
+            style={{ color: "var(--color-dark)" }}
+          >
+            Password
+          </label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-3 rounded border border-var(--color-medium) bg-var(--color-light) text-var(--color-darkest) focus:outline-none focus:ring-2 focus:ring-var(--color-medium)"
+          />
+        </div>
+
+        <button
+          onClick={handleRegister}
+          className="w-full py-3 mt-2 rounded font-semibold transition duration-200"
+          style={{
+            backgroundColor: "var(--color-medium)",
+            color: "var(--color-lightest)",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "var(--color-dark)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "var(--color-medium)")
+          }
+        >
+          Register
+        </button>
+      </div>
     </div>
   );
 };
