@@ -37,7 +37,9 @@ class Login(APIView):
     def post(self, request):
         data = request.data.copy()
         data["username"] = data.get("email")
-        user = authenticate(username=data.get("username"), password=data.get("password"))
+        user = authenticate(
+            username=data.get("username"), password=data.get("password")
+        )
 
         if user:
             token_obj, _ = Token.objects.get_or_create(user=user)
@@ -55,3 +57,57 @@ class Login(APIView):
                 {"detail": "No user matches those credentials"},
                 status=s.HTTP_404_NOT_FOUND,
             )
+
+
+class UserPermissions(APIView):
+    authentication_classes = [CookieTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+class Logout(UserPermissions):
+    def post(self, request):
+        user = request.user
+        token = user.auth_token
+        logout(request)
+        token.delete()
+        response = Response(status=s.HTTP_204_NO_CONTENT)
+        response.delete_cookie(AUTH_TOKEN_COOKIE)
+        return response
+
+
+class Info(UserPermissions):
+    def get(self, request):
+        return Response(
+            {
+                "email": request.user.email,
+                "is_super": request.user.is_superuser,
+            }
+        )
+
+
+class AuthMe(UserPermissions):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        """
+        If User is not logged in, return an anonymous user object
+        This allows the user to explore the site without a registered user's permissions
+        """
+        if not request.user.is_authenticated:
+            return Response(
+                {
+                    "email": None,
+                    "is_super": False,
+                }
+            )
+
+        """
+        If the User is logged in, return the authenticated user object
+        This allows for full site functionallity
+        """
+        return Response(
+            {
+                "email": request.user.email,
+                "is_super": request.user.is_superuser,
+            }
+        )
