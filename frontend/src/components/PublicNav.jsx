@@ -1,14 +1,84 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
+import Logo from "../assets/images/logo.png";
 
 // PublicLayout is a layout wrapper for pages accessible without authentication, providdes nav bar functionality
 export default function PublicLayout() {
+  const location = useLocation();
+
+  const isHome = location.pathname === "/";
+  const isLogin = location.pathname === "/login";
+  const isRegister = location.pathname === "/register";
+
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900">
+    <div
+      className="min-h-screen"
+      style={{
+        backgroundColor: "var(--color-lightest)",
+        color: "var(--color-darkest)",
+      }}
+    >
       {/* Navbar */}
-      <nav className="bg-blue-800 text-white p-4 flex justify-center space-x-4">
-        <Link to="/" className="hover:text-gray-300">Home </Link>
-        <Link to="/login" className="hover:text-gray-300">Login </Link>
-        <Link to="/register" className="hover:text-gray-300">Register</Link>
+      <nav
+        className="p-4 flex items-center justify-center space-x-4"
+        style={{ backgroundColor: "var(--color-darkest)" }}
+      >
+        {/* Logo on the left */}
+        <div className="mr-6">
+          <Link to="/">
+            <img src={Logo} alt="LawnHero Logo" className="h-10 w-auto" />
+          </Link>
+        </div>
+
+        {/* Navbar links */}
+        <div className="flex space-x-4">
+          {!isHome && (
+            <Link
+              to="/"
+              className="px-3 py-1 rounded-md transition duration-200"
+              style={{ color: "var(--color-lightest)" }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.color = "var(--color-medium)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.color = "var(--color-lightest)")
+              }
+            >
+              Home
+            </Link>
+          )}
+
+          {!isLogin && (
+            <Link
+              to="/login"
+              className="px-3 py-1 rounded-md transition duration-200"
+              style={{ color: "var(--color-lightest)" }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.color = "var(--color-medium)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.color = "var(--color-lightest)")
+              }
+            >
+              Login
+            </Link>
+          )}
+
+          {!isRegister && (
+            <Link
+              to="/register"
+              className="px-3 py-1 rounded-md transition duration-200"
+              style={{ color: "var(--color-lightest)" }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.color = "var(--color-medium)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.color = "var(--color-lightest)")
+              }
+            >
+              Register
+            </Link>
+          )}
+        </div>
       </nav>
 
       {/* Page content */}
@@ -17,7 +87,7 @@ export default function PublicLayout() {
       </main>
 
       {/* Optional Footer */}
-      {/* <footer className="text-center mt-10 text-gray-500">
+      {/* <footer className="text-center mt-10" style={{ color: "var(--color-dark)" }}>
         &copy; {new Date().getFullYear()} LawnHero
       </footer> */}
     </div>
