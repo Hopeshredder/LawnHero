@@ -1,87 +1,66 @@
 import axios from 'axios';
 
 // Defines the base URL used to access all backend Django calls
-const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/api/v1/",
+export const api = axios.create({
+    baseURL: "http://127.0.0.1:8000/api/v1/",
+    withCredentials: true, // This tells frontend to send Auth cookie with request
 });
 
 // Registers a User
-export const registerUser = async (email, password, name) => {
+export const registerUser = async (email, password) => {
     try {
-        const response = await api.post("SIGNUP ENDPOINT/", {
-            email,
-            password,
-            name
-        });
-
-        console.log('registerUser response data', response.data);
-
-        if (response.status === 201) {
-            const { user, token } = response.data;
-            localStorage.setItem("token", token);
-            api.defaults.headers.common["Authorization"] = `Token ${token}`;
-            return user;
-        }
-
-        return null;
-    } catch (error) {
-        console.error("Signup failed:", error.response?.data || error.message);
-        throw error;
+        const res = await api.post("users/signup/", { email, password });
+        return res.data; // { email }
+    } catch (err) {
+        console.error("registerUser failed:", err.response?.data || err.message);
+        throw err;
     }
-}
+};
 
-// Logs a user in
+// Attempts to log a user in with the given email and password
 export const loginUser = async (email, password) => {
-    const response = await api.post("LOGIN ENDPOINT/", { email, password});
-    if (response.status === 200) {
-        const { user, token} = response.data;
-        localStorage.setItem("token", token);
-        api.defaults.headers.common["Authorization"] = `Token ${token}`
-        console.log(user)
-        return user;
+    try {
+        const res = await api.post("users/login/", { email, password });
+        return res.data; // { email }
+    } catch (err) {
+        console.error("loginUser failed:", err.response?.data || err.message);
+        throw err;
     }
+};
 
-    // error case
-    console.log('loginUser Error', response.data);
-    return null;
-}
+// Gets a user's info (email and whether or not they are super)
+export const getUserInfo = async () => {
+    try {
+        const res = await api.get("users/info/");
+        return res.data; // { email, is_super }
+    } catch (err) {
+        console.error("getUserInfo failed:", err.response?.data || err.message);
+        throw err;
+    }
+};
+
+// Returns whether or not a user is authorized
+export const authMe = async () => {
+    try {
+        const res = await api.get("users/auth/me/");
+        return res.data; // { email, is_super } or anon { email:null, is_super:false }
+    } catch (err) {
+        console.error("authMe failed:", err.response?.data || err.message);
+        // return a safe fallback if you prefer:
+        return { email: null, is_super: false };
+    }
+};
 
 // Logs a user out
 export const logoutUser = async () => {
-    // hit the logout endpoint
-    console.log('logoutUser, api headers', api.defaults.headers.common)
-    const response = await api.post("LOGOUT ENDPOINT/")
-    if (response.status === 204) {
-        // delete token from localstorage
-        localStorage.removeItem("token")
-        // delete token from axios api instance
-        delete api.defaults.headers.common["Authorization"];
-        return null
+    try {
+        await api.post("users/logout/");
+        return null;
+    } catch (err) {
+        console.error("logoutUser failed:", err.response?.data || err.message);
+        throw err;
     }
-
-    console.log('logoutUser logout failed')
-}
-
-
-// Check if auth token exists clientside already
-export const userConfirmation = async() => {
-    console.log('userConfirmation()')
-    const token = localStorage.getItem("token");
-    if (token) {
-        console.log('got token ', token)
-        api.defaults.headers.common["Authorization"] = `Token ${token}`
-        // get basic user info and the default user data we want to display
-        const response = await api.get("USER INFO ENDPOINT/")
-        console.log(response)
-        if (response.status === 200) {
-            console.log('made api call', response.data.user)
-            return response.data.user;
-        }
-        console.log('userConfirmation returned response other than 200', response.data);
-    }
-    console.log('userConfirmation error');
-    return null;
-}
+};
 
 // Creates a yard object with the given information
 export const createYard = async (payload) => {
@@ -102,7 +81,7 @@ export const updateYard = async (id, payload) => {
 }
 
 // Removes a yard object
-export const removeYard = async (id, payload) => {
+export const removeYard = async (id) => {
     const res = await api.delete(`ENDPOINT/${id}/`);
     return res.data;
 }
