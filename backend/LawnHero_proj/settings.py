@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "rest_framework.authtoken",
     "corsheaders",
     "UserApp",
 ]
@@ -133,6 +135,17 @@ AUTH_USER_MODEL = "UserApp.User"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "users_app.authentication.CookieTokenAuthentication",
+        "UserApp.authentication.CookieTokenAuthentication",
     ],
 }
+
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ALLOWED_ORIGINS",
+        "http://127.0.0.1:5173",
+    ).split(",")
+]
+
+# True = Allows Cookies to be sent along cross-origin requests
+CORS_ALLOW_CREDENTIALS = True
