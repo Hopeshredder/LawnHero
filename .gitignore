@@ -50,7 +50,7 @@ instance/
 # Django specific
 media/
 staticfiles/
-.env
+*.env
 .env.local
 *.pem
 *.crt
