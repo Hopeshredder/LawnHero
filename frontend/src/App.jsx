@@ -30,7 +30,7 @@ const router = createBrowserRouter([
     path: "/",
     element: <PrivateNav />,
     children: [
-      { path: "todo", element: <Todo /> },
+      { path: "todo", element: <Todo /> }, 
       { path: "supertips", element: <SuperTips /> },
       { path: "dashboard", element: <Dashboard /> },
       { path: "settings", element: <Settings /> },
