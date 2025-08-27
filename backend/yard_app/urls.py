@@ -1,8 +1,8 @@
 from django.urls import path
-from .views import YardView, YardGroupView, YardGroupMethodView
+from .views import YardView, YardListView, YardGroupView, YardGroupMethodView
 
 urlpatterns = [
-    path("", YardView.as_view(), name="yard-list"),
+    path("", YardListView.as_view(), name="yard-list"),
     path("<int:yard_id>/", YardView.as_view(), name="yard-detail"),
     path("yard-groups/", YardGroupView.as_view(), name="yard-group-list"),
     path(

@@ -27,7 +27,9 @@ class YardView(UserPermissions, APIView):
         user = request.user
         try:
             yard = Yard.objects.get(id=yard_id, user=user)
-            serializer = YardSerializer(yard, data=request.data)
+            data = request.data.copy()
+            data['user'] = user.id  # Ensure the user field is set to the authenticated user
+            serializer = YardSerializer(yard, data=data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
@@ -62,6 +64,7 @@ class YardView(UserPermissions, APIView):
             return Response(serializer.data, status=s.HTTP_201_CREATED)
         return Response(serializer.errors, status=s.HTTP_400_BAD_REQUEST)
 
+class YardListView(UserPermissions, APIView):
     # get all yards for user
     def get(self, request):
         if not request.user.is_authenticated:
@@ -105,6 +108,23 @@ class YardGroupView(UserPermissions, APIView):
             group = YardGroup.objects.get(id=group_id, user=user)
             group.delete()
             return Response(status=s.HTTP_204_NO_CONTENT)
+        except YardGroup.DoesNotExist:
+            return Response({"error": "Group not found or unauthorized"}, status=s.HTTP_404_NOT_FOUND)
+        
+    #  put to change yardgroup name
+    def put(self, request, group_id):
+        if not request.user.is_authenticated:
+            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
+        user = request.user
+        try:
+            group = YardGroup.objects.get(id=group_id, user=user)
+            data = request.data.copy()
+            data['user'] = user.id  # Ensure the user field is set to the authenticated user
+            serializer = YardGroupSerializer(group, data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=s.HTTP_400_BAD_REQUEST)
         except YardGroup.DoesNotExist:
             return Response({"error": "Group not found or unauthorized"}, status=s.HTTP_404_NOT_FOUND)
 
