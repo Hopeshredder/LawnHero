@@ -18,7 +18,9 @@ class SignUp(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        data = request.data.copy()
+        data["username"] = data.get("email")
+        serializer = UserSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         token_obj = Token.objects.create(user=user)
@@ -28,6 +30,7 @@ class SignUp(APIView):
         response.set_cookie(
             AUTH_TOKEN_COOKIE, token_obj.key, httponly=True, samesite="Lax"
         )
+        login(request=request, user=user)
         return response
 
 
