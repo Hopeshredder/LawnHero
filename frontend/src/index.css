@@ -4,9 +4,11 @@
 
 :root {
   /* LawnHero color palette */
-  --color-lightest: #DAD7CD;   /* very light neutral */
+  --color-lightest: #f9f0dd;   /* very light neutral */
   --color-light: #A3B18A;      /* light green */
-  --color-medium: #588157;     /* medium green */
-  --color-dark: #3A5A40;       /* dark green */
-  --color-darkest: #344E41;    /* deepest green / accent */
+  --color-medium: #497f35;     /* medium green */
+  --color-dark: #184225;       /* dark green */
+  --color-darkest: #194225;    /* deepest green / accent */
+  --color-head: #a14525;       /* dark orange head color */
+  --color-head-light: #c65b3b; /* light orange head color */
 }
