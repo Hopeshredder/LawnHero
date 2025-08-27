@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { loginUser } from "../Api";
+import Logo from "../assets/images/logo-trans.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -24,14 +25,21 @@ const Login = () => {
 
   return (
     <div
-      className="flex flex-col items-center justify-start min-h-screen pt-16 px-4"
+      className="flex flex-col items-center justify-start min-h-screen pt-0 px-4"
       style={{
         backgroundColor: "var(--color-lightest)",
         color: "var(--color-darkest)",
-      }}>
+      }}
+    >
+      <img
+        src={Logo}
+        alt="LawnHero Logo"
+        className="mx-auto mb-6 h-40 w-auto"
+      />
       <h1
-        className="text-4xl font-extrabold mb-8"
-        style={{ color: "var(--color-medium)" }}>
+        className="text-5xl font-extrabold mb-8"
+        style={{ color: "var(--color-medium)" }}
+      >
         Login
       </h1>
 
@@ -42,7 +50,8 @@ const Login = () => {
           <label
             htmlFor="email"
             className="block mb-1 font-medium"
-            style={{ color: "var(--color-dark)" }}>
+            style={{ color: "var(--color-dark)" }}
+          >
             Email
           </label>
           <input
@@ -58,7 +67,8 @@ const Login = () => {
           <label
             htmlFor="password"
             className="block mb-1 font-medium"
-            style={{ color: "var(--color-dark)" }}>
+            style={{ color: "var(--color-dark)" }}
+          >
             Password
           </label>
           <input
@@ -82,7 +92,8 @@ const Login = () => {
           }
           onMouseLeave={(e) =>
             (e.currentTarget.style.backgroundColor = "var(--color-medium)")
-          }>
+          }
+        >
           Login
         </button>
       </div>

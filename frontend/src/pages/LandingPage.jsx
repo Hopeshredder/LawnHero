@@ -4,7 +4,7 @@ import Logo from "../assets/images/logo-trans.png";
 export default function Landing() {
   return (
     <div
-      className="min-h-screen flex flex-col justify-start items-center text-center px-4 pt-16"
+      className="min-h-screen flex flex-col justify-start items-center text-center px-4 pt-0"
       style={{
         backgroundColor: "var(--color-lightest)",
         color: "var(--color-darkest)",

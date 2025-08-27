@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { registerUser } from "../Api";
+import Logo from "../assets/images/logo-trans.png";
 
 const RegisterPage = () => {
   const [email, setEmail] = useState("");
@@ -25,14 +26,19 @@ const RegisterPage = () => {
 
   return (
     <div
-      className="flex flex-col items-center justify-start min-h-screen pt-16 px-4"
+      className="flex flex-col items-center justify-start min-h-screen pt-0 px-4"
       style={{
         backgroundColor: "var(--color-lightest)",
         color: "var(--color-darkest)",
       }}
     >
+      <img
+        src={Logo}
+        alt="LawnHero Logo"
+        className="mx-auto mb-6 h-40 w-auto"
+      />
       <h1
-        className="text-4xl font-extrabold mb-8"
+        className="text-5xl font-extrabold mb-8"
         style={{ color: "var(--color-medium)" }}
       >
         Register

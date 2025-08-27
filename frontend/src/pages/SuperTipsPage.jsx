@@ -32,7 +32,7 @@ export default function SuperTips() {
         <input
           type="search"
           id="search"
-          placeholder="search"
+          placeholder="ex: watering techniques"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full p-3 rounded border border-var(--color-medium) bg-var(--color-light) text-var(--color-darkest) focus:outline-none focus:ring-2 focus:ring-var(--color-medium)"
