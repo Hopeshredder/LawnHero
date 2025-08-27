@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { registerUser } from "../Api";
+import { useNavigate } from "react-router-dom";
 import Logo from "../assets/images/logo-trans.png";
 
 const RegisterPage = () => {
@@ -7,6 +8,8 @@ const RegisterPage = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   const handleRegister = async () => {
     setError("");
@@ -21,6 +24,7 @@ const RegisterPage = () => {
       );
     } finally {
       console.log("Registering:", { email, password, name });
+      navigate("/todo");
     }
   };
 
