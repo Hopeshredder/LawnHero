@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { loginUser } from "../Api";
+import { Link, useNavigate } from "react-router-dom";
 import Logo from "../assets/images/logo-trans.png";
 
 const Login = () => {
@@ -7,11 +8,14 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  const navigate = useNavigate();
+
   const handleLogin = async () => {
     setError("");
     try {
       const user = await loginUser(email, password);
       console.log("Logged in user:", user);
+      navigate("/todo");
     } catch (err) {
       setError(
         err.response?.data?.detail ||
