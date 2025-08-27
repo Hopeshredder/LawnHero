@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -19,27 +19,57 @@ class YardPreferences(APIView):
     authentication_classes = [CookieTokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, yard_id):
+    def _get_user_yards(self, request, yard_id):
         # Ensures that the yard requested belongs to the requesting user
-        try:
-            yard = Yard.objects.get(user=request.user, id=yard_id)
-        except Exception as e:
+
+        # Since this is a helper function used in get and post, it allows
+        # for a cleaner flow (can just check `if NOT yard: ...`)
+        return Yard.objects.filter(id=yard_id, user=request.user).first()
+
+    def get(self, request, yard_id):
+        yard = self._get_user_yards(request, yard_id)
+        if not yard:
             return Response(
                 {
                     "ok": False,
-                    "detail": f"No yard with that yard_id found for user_id: {request.user.id}",
-                    "error": e,
+                    "detail": f"No yard {yard_id} found for user {request.user.id}",
+                },
+                status=s.HTTP_404_NOT_FOUND,
+            )
+        prefs, _ = Preferences.objects.get_or_create(yard=yard)
+        data = YardPreferencesSerializer(prefs).data
+
+        return Response({"ok": True, "data": data}, status=s.HTTP_200_OK)
+
+    def post(self, request, yard_id):
+        yard = self._get_user_yards(request, yard_id)
+
+        if not yard:
+            return Response(
+                {
+                    "ok": False,
+                    "detail": f"No yard {yard_id} found for user {request.user.id}",
                 },
                 status=s.HTTP_404_NOT_FOUND,
             )
 
-        preferences = get_object_or_404(Preferences, yard=yard)
-        ser_preferences = YardPreferencesSerializer(preferences).data
+        prefs, created = Preferences.objects.get_or_create(yard=yard)
+        serializer = YardPreferencesSerializer(
+            instance=prefs, data=request.data, partial=True
+        )
 
-        return Response({"ok": True, "data": ser_preferences}, status=s.HTTP_200_OK)
-
-    def post(self, request, yard_id):
-        data = request.data.copy()
-
-        yard = Yard.objects.get(id=yard_id)
+        if not serializer.is_valid():
+            return Response(
+                {"ok": False, "errors": serializer.errors},
+                status=s.HTTP_400_BAD_REQUEST,
+            )
         
+        # Since the id and yard fields are set to read-only to avoid users updating someone else's prefs,
+        # the `yard=yard` tells the serializer to use the pre-fetched yard when creating the instance
+        serializer.save(yard=yard)
+
+
+        return Response(
+            {"ok": True, "detail": "Preferences created" if created else "Preferences updates"},
+            status=s.HTTP_201_CREATED if created else s.HTTP_200_OK,
+        )

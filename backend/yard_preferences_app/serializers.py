@@ -6,3 +6,4 @@ class YardPreferencesSerializer(ModelSerializer):
     class Meta:
         model = Preferences
         fields = "__all__"
+        read_only_fields = ("id", "yard")
