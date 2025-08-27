@@ -6,6 +6,8 @@ export const api = axios.create({
     withCredentials: true, // This tells frontend to send Auth cookie with request
 });
 
+/* ---------------------   User Object Interaction   --------------------- */
+
 // Registers a User
 export const registerUser = async (email, password) => {
     try {
@@ -62,26 +64,62 @@ export const logoutUser = async () => {
     }
 };
 
+/* ---------------------   Yard Object Interaction   --------------------- */
+
 // Creates a yard object with the given information
 export const createYard = async (payload) => {
-    const res = await api.post('ENDPOINT/', payload);
-    return res.data;
+    try {
+        const res = await api.post('yards/', payload);
+        return res.data;
+    } catch (err) {
+        console.error("createYard failed:", err.response?.data || err.message);
+        throw err;
+    }
 };
 
 // Gets a yard object
 export const getYard = async (id) => {
-    const res = await api.get(`ENDPOINT/${id}/`);
-    return res.data;
+    try {
+        const res = await api.get(`yards/${id}/`);
+        return res.data;
+    } catch (err) {
+        console.error("getYard failed:", err.response?.data || err.message);
+        throw err;
+    }
+};
+
+// Gets a list of all yard objects associated with a user
+export const getYardList = async () => {
+    try {
+        const res = await api.get('yards/');
+        return res.data;
+    } catch (err) {
+        console.error("getYardList failed:", err.response?.data || err.message);
+        throw err;
+    }
 };
 
 // Updates yard object
 export const updateYard = async (id, payload) => {
-    const res = await api.put(`ENDPOINT/${id}/`, payload);
-    return res.data;
+    try {
+        const res = await api.put(`yards/${id}/`, payload);
+        return res.data;
+    } catch (err) {
+        console.error("updateYard failed:", err.response?.data || err.message);
+        throw err;
+    }
 }
 
 // Removes a yard object
 export const removeYard = async (id) => {
-    const res = await api.delete(`ENDPOINT/${id}/`);
-    return res.data;
+    try {
+        const res = await api.delete(`yards/${id}/`);
+        return res.data;
+    } catch (err) {
+        console.error("removeYard failed:", err.response?.data || err.message);
+        throw err;
+    }
 }
+
+/* ---------------------   Yard Preferences Interaction   --------------------- */
+// To Do
