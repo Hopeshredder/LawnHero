@@ -62,6 +62,16 @@ class YardView(UserPermissions, APIView):
             return Response(serializer.data, status=s.HTTP_201_CREATED)
         return Response(serializer.errors, status=s.HTTP_400_BAD_REQUEST)
 
+    # get all yards for user
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
+        user = request.user
+        yards = Yard.objects.filter(user=user)
+        serializer = YardSerializer(yards, many=True)
+        if not yards.exists():
+            return Response({"yards": [], "message": "No yards found for user."}, status=s.HTTP_200_OK)
+        return Response(serializer.data)
 
 class YardGroupView(UserPermissions, APIView):
     # get yard groups for user
@@ -69,8 +79,10 @@ class YardGroupView(UserPermissions, APIView):
         if not request.user.is_authenticated:
             return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
-        yard_groups = YardGroup.objects.filter(yards__user=user).distinct()
+        yard_groups = YardGroup.objects.filter(user=user)
         serializer = YardGroupSerializer(yard_groups, many=True)
+        if not yard_groups.exists():
+            return Response({"yard_groups": [], "message": "No yard groups found for user."}, status=s.HTTP_200_OK)
         return Response(serializer.data)
     
     # create a yard group
@@ -90,11 +102,11 @@ class YardGroupView(UserPermissions, APIView):
             return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
         try:
-            group = YardGroup.objects.get(id=group_id)
+            group = YardGroup.objects.get(id=group_id, user=user)
             group.delete()
             return Response(status=s.HTTP_204_NO_CONTENT)
         except YardGroup.DoesNotExist:
-            return Response({"error": "Group not found"}, status=s.HTTP_404_NOT_FOUND)
+            return Response({"error": "Group not found or unauthorized"}, status=s.HTTP_404_NOT_FOUND)
 
 class YardGroupMethodView(UserPermissions, APIView):
     # add yard to yard group
@@ -104,12 +116,12 @@ class YardGroupMethodView(UserPermissions, APIView):
         user = request.user
         try:
             yard = Yard.objects.get(id=yard_id, user=user)
-            group = YardGroup.objects.get(id=group_id)
+            group = YardGroup.objects.get(id=group_id, user=user)
             yard.yard_group = group
             yard.save()
             return Response({"success": "Yard added to group"}, status=s.HTTP_201_CREATED)
         except (Yard.DoesNotExist, YardGroup.DoesNotExist):
-            return Response({"error": "Yard or group not found"}, status=s.HTTP_404_NOT_FOUND)
+            return Response({"error": "Yard or group not found or unauthorized"}, status=s.HTTP_404_NOT_FOUND)
 
     # remove yard from yard group
     def delete(self, request, yard_id, group_id):
@@ -118,7 +130,7 @@ class YardGroupMethodView(UserPermissions, APIView):
         user = request.user
         try:
             yard = Yard.objects.get(id=yard_id, user=user)
-            group = YardGroup.objects.get(id=group_id)
+            group = YardGroup.objects.get(id=group_id, user=user)
             if yard.yard_group == group:
                 yard.yard_group = None
                 yard.save()
