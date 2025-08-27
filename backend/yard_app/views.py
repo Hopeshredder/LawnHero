@@ -68,7 +68,7 @@ class YardListView(UserPermissions, APIView):
             return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
         # data should include yard details
-        data = request.data
+        data = request.data.copy()
         # Associate the yard with the authenticated user
         data['user'] = user.id
         serializer = YardSerializer(data=data)
@@ -94,7 +94,9 @@ class YardGroupView(UserPermissions, APIView):
         if not request.user.is_authenticated:
             return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
-        serializer = YardGroupSerializer(data=request.data)
+        data = request.data.copy()
+        data['user'] = user.id  # Ensure the user field is set to the authenticated user
+        serializer = YardGroupSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=s.HTTP_201_CREATED)
@@ -136,11 +138,15 @@ class YardGroupMethodView(UserPermissions, APIView):
             return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
         try:
-            yard = Yard.objects.get(id=yard_id, user=user)
-            group = YardGroup.objects.get(id=group_id, user=user)
-            yard.yard_group = group
-            yard.save()
-            return Response({"success": "Yard added to group"}, status=s.HTTP_201_CREATED)
+            data = request.data.copy()
+            data['user'] = user.id  # Ensure the user field is set to the authenticated user
+            serializer = YardSerializer(data=data)
+            if serializer.is_valid():
+                yard = Yard.objects.get(id=yard_id, user=user)
+                group = YardGroup.objects.get(id=group_id, user=user)
+                yard.yard_group = group
+                yard.save()
+                return Response({"success": "Yard added to group"}, status=s.HTTP_201_CREATED)
         except (Yard.DoesNotExist, YardGroup.DoesNotExist):
             return Response({"error": "Yard or group not found or unauthorized"}, status=s.HTTP_404_NOT_FOUND)
 
