@@ -12,7 +12,7 @@ export default function Settings() {
     try {
       await logoutUser();
       console.log("Logged out");
-      navigate("/login");
+      navigate("/");
     } catch (err) {
       setError(
         err.response?.data?.detail ||
