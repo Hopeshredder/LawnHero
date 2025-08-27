@@ -49,6 +49,19 @@ class YardView(UserPermissions, APIView):
         except Yard.DoesNotExist:
             return Response({"error": "Yard not found"}, status=s.HTTP_404_NOT_FOUND)
 
+
+class YardListView(UserPermissions, APIView):
+    # get all yards for user
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
+        user = request.user
+        yards = Yard.objects.filter(user=user)
+        serializer = YardSerializer(yards, many=True)
+        if not yards.exists():
+            return Response({"yards": [], "message": "No yards found for user."}, status=s.HTTP_200_OK)
+        return Response(serializer.data)
+
     # create yard for user
     def post(self, request):
         if not request.user.is_authenticated:
@@ -63,19 +76,7 @@ class YardView(UserPermissions, APIView):
             serializer.save()
             return Response(serializer.data, status=s.HTTP_201_CREATED)
         return Response(serializer.errors, status=s.HTTP_400_BAD_REQUEST)
-
-class YardListView(UserPermissions, APIView):
-    # get all yards for user
-    def get(self, request):
-        if not request.user.is_authenticated:
-            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
-        user = request.user
-        yards = Yard.objects.filter(user=user)
-        serializer = YardSerializer(yards, many=True)
-        if not yards.exists():
-            return Response({"yards": [], "message": "No yards found for user."}, status=s.HTTP_200_OK)
-        return Response(serializer.data)
-
+    
 class YardGroupView(UserPermissions, APIView):
     # get yard groups for user
     def get(self, request):
