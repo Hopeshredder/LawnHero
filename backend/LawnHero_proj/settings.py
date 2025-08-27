@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "users_app",
     "yard_preferences_app",
+    "yard_app",
 ]
 
 MIDDLEWARE = [
