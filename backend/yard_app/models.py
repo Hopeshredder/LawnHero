@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 from users_app.models import User
 
 
@@ -11,7 +12,7 @@ class YardGroup(models.Model):
 class Yard(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="yards")
     yard_name = models.CharField(max_length=100, default="Unnamed Yard")
-    yard_size = models.IntegerField(min_value=0, default=0)
+    yard_size = models.IntegerField(validators=[MinValueValidator(0)], default=0)
     soil_type = models.CharField(max_length=20, default="Unknown")
     grass_type = models.CharField(max_length=20, default="Unknown")
     longitude = models.CharField(max_length=100, default="Unknown")
