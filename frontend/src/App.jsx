@@ -1,39 +1,51 @@
 import { createBrowserRouter } from "react-router-dom";
 
-import './App.css';
-import PublicNav from './components/PublicNav';
-import NotFound from './pages/NotFoundPage';
-import Landing from './pages/LandingPage';
-import Login from './pages/LoginPage';
-import Register from './pages/RegisterPage';
+import "./App.css";
+import PublicRoute from "./components/PublicRoute";
+import PublicNav from "./components/PublicNav";
+import NotFound from "./pages/NotFoundPage";
+import Landing from "./pages/LandingPage";
+import Login from "./pages/LoginPage";
+import Register from "./pages/RegisterPage";
 
-import PrivateNav from './components/PrivateNav';
-import Todo from './pages/TodoPage';
-import SuperTips from './pages/SuperTipsPage';
-import Dashboard from './pages/DashboardPage';
-import Settings from './pages/SettingsPage';
+import ProtectedRoute from "./components/ProtectedRoute";
+import PrivateNav from "./components/PrivateNav";
+import Todo from "./pages/TodoPage";
+import SuperTips from "./pages/SuperTipsPage";
+import Dashboard from "./pages/DashboardPage";
+import Settings from "./pages/SettingsPage";
 
 const router = createBrowserRouter([
-  // Public routes (no login required)
+  // Public routes (no auth required)
   {
     path: "/",
-    element: <PublicNav />,
+    element: <PublicRoute />,
     children: [
-      { index: true, element: <Landing /> },
-      { path: "login", element: <Login /> },
-      { path: "register", element: <Register /> },
+      {
+        element: <PublicNav />,
+        children: [
+          { index: true, element: <Landing /> },
+          { path: "login", element: <Login /> },
+          { path: "register", element: <Register /> },
+        ],
+      },
     ],
   },
 
-  // Private routes (login required) NEED TO ADD AUTH WRAPPER
+  // Private routes (auth required)
   {
     path: "/",
-    element: <PrivateNav />,
+    element: <ProtectedRoute />,
     children: [
-      { path: "todo", element: <Todo /> }, 
-      { path: "supertips", element: <SuperTips /> },
-      { path: "dashboard", element: <Dashboard /> },
-      { path: "settings", element: <Settings /> },
+      {
+        element: <PrivateNav />,
+        children: [
+          { path: "todo", element: <Todo /> },
+          { path: "supertips", element: <SuperTips /> },
+          { path: "dashboard", element: <Dashboard /> },
+          { path: "settings", element: <Settings /> },
+        ],
+      },
     ],
   },
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { loginUser } from "../Api";
-import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import Logo from "../assets/images/logo-trans.png";
 
 const Login = () => {
@@ -9,21 +9,23 @@ const Login = () => {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async () => {
     setError("");
     try {
-      const user = await loginUser(email, password);
-      console.log("Logged in user:", user);
-      navigate("/todo");
+      const data = await login(email, password);
+      if (data?.email) {
+        navigate("/todo");
+      } else {
+        setError("Login failed to establish session.");
+      }
     } catch (err) {
       setError(
         err.response?.data?.detail ||
           JSON.stringify(err.response?.data) ||
           "Login failed"
       );
-    } finally {
-      console.log("Logging in:", { email, password });
     }
   };
 
