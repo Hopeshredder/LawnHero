@@ -209,3 +209,66 @@ export const updatePrefs = async (yard_id, payload) => {
     throw err;
   }
 };
+
+/* -----------------------   Task Object Interaction   ------------------------ */
+
+// Creates a task for a given yard
+export const createTask = async (yard_id, payload) => {
+  try {
+    const res = await api.post(`tasks/${yard_id}/add/`, payload); 
+    return res.data; // { id, activity_type, day_scheduled, day_completed, yard }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Gets a task by a given task id
+export const getTask = async (task_id) => {
+  try {
+    const res = await api.get(`tasks/task/${task_id}/`);
+    return res.data; // { id, activity_type, day_scheduled, day_completed, yard }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Updates a task (selected by ID, can be partial) with the given payload
+export const updateTask = async (task_id, payload) => {
+  try {
+    const res = await api.put(`tasks/task/${task_id}/`, payload);
+    return res.data; // { id, activity_type, day_scheduled, day_completed, yard }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Deletes a task by a given task id
+export const deleteTask = async (task_id) => {
+  try {
+    const res = await api.delete(`tasks/task/${task_id}/`);
+    if (res.status === 204) return null;
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Gets all tasks for a given yard
+export const getTaskForYard = async (yard_id) => {
+  try {
+    const res = await api.get(`tasks/${yard_id}/`);
+    return res.data; // [ task object, ... ]
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Gets upcoming and recently completed tasks for a yard
+export const fetchRecentTasks = async (yard_id) => {
+  try {
+    const res = await api.get(`tasks/${yard_id}/due-and-completed/`);
+    return res.data; // { upcoming_tasks: [ task object, ... ], recent_tasks: [ task object, ... ] }
+  } catch (err) {
+    throw err;
+  }
+};
