@@ -49,7 +49,10 @@ class Login(APIView):
             login(request=request, user=user)
 
             # Cookie-based auth
-            response = Response({"email": user.email}, status=s.HTTP_200_OK)
+            response = Response(
+                {"email": user.email, "detail": "login successful"},
+                status=s.HTTP_200_OK,
+            )
             response.set_cookie(
                 AUTH_TOKEN_COOKIE, token_obj.key, httponly=True, samesite="Lax"
             )
@@ -73,7 +76,7 @@ class Logout(UserPermissions):
         token = user.auth_token
         logout(request)
         token.delete()
-        response = Response(status=s.HTTP_204_NO_CONTENT)
+        response = Response({f"{user} logged out"}, status=s.HTTP_204_NO_CONTENT)
         response.delete_cookie(AUTH_TOKEN_COOKIE)
         return response
 
