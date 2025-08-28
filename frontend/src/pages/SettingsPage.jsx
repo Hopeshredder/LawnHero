@@ -1,26 +1,26 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import { logoutUser } from "../Api";
 import { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Settings() {
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
     setError("");
     try {
-      await logoutUser();
-      console.log("Logged out");
-      navigate("/");
+      await logout(); 
+      navigate("/"); 
     } catch (err) {
       setError(
         err.response?.data?.detail ||
           JSON.stringify(err.response?.data) ||
-          "Loout failed"
+          "Logout failed"
       );
-    } finally {
-      console.log("Logging out:");
     }
   };
 
