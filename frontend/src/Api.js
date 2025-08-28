@@ -189,4 +189,23 @@ export const removeYardFromGroup = async (group_id, yard_id) => {
 
 
 /* ---------------------   Yard Preferences Interaction   --------------------- */
-// To Do
+
+// Gets the preferences of a given yard
+export const getPrefs = async (yard_id) => {
+  try {
+    const res = await api.get(`yard_pref/${yard_id}/`);
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Updates the yard's preferences, partial data allowed
+export const updatePrefs = async (yard_id, payload) => {
+  try {
+    const res = await api.post(`yard_pref/${yard_id}/`, payload);
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+};
