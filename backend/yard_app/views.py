@@ -1,17 +1,14 @@
 from django.shortcuts import render
 from rest_framework import status as s
 from .models import Yard, YardGroup
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import YardSerializer, YardGroupSerializer
 from users_app.views import UserPermissions
 
 # Create your views here.
-class YardView(UserPermissions, APIView):
+class YardView(UserPermissions):
     # get yard for user by id
     def get(self, request, yard_id):
-        if not request.user.is_authenticated:
-            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
         try:
             yard = Yard.objects.get(id=yard_id, user=user)
@@ -22,8 +19,6 @@ class YardView(UserPermissions, APIView):
 
     # update yard for user by id
     def put(self, request, yard_id):
-        if not request.user.is_authenticated:
-            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
         try:
             yard = Yard.objects.get(id=yard_id, user=user)
@@ -39,8 +34,6 @@ class YardView(UserPermissions, APIView):
 
     # delete yard for user by id
     def delete(self, request, yard_id):
-        if not request.user.is_authenticated:
-            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
         try:
             yard = Yard.objects.get(id=yard_id, user=user)
@@ -50,11 +43,9 @@ class YardView(UserPermissions, APIView):
             return Response({"error": "Yard not found"}, status=s.HTTP_404_NOT_FOUND)
 
 
-class YardListView(UserPermissions, APIView):
+class YardListView(UserPermissions):
     # get all yards for user
     def get(self, request):
-        if not request.user.is_authenticated:
-            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
         yards = Yard.objects.filter(user=user)
         serializer = YardSerializer(yards, many=True)
@@ -64,8 +55,6 @@ class YardListView(UserPermissions, APIView):
 
     # create yard for user
     def post(self, request):
-        if not request.user.is_authenticated:
-            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
         # data should include yard details
         data = request.data.copy()
@@ -77,11 +66,9 @@ class YardListView(UserPermissions, APIView):
             return Response(serializer.data, status=s.HTTP_201_CREATED)
         return Response(serializer.errors, status=s.HTTP_400_BAD_REQUEST)
     
-class YardGroupView(UserPermissions, APIView):
+class YardGroupView(UserPermissions):
     # get yard groups for user
     def get(self, request):
-        if not request.user.is_authenticated:
-            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
         yard_groups = YardGroup.objects.filter(user=user)
         serializer = YardGroupSerializer(yard_groups, many=True)
@@ -91,8 +78,6 @@ class YardGroupView(UserPermissions, APIView):
     
     # create a yard group
     def post(self, request):
-        if not request.user.is_authenticated:
-            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
         data = request.data.copy()
         data['user'] = user.id  # Ensure the user field is set to the authenticated user
@@ -104,8 +89,6 @@ class YardGroupView(UserPermissions, APIView):
 
     # delete yard group
     def delete(self, request, group_id):
-        if not request.user.is_authenticated:
-            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
         try:
             group = YardGroup.objects.get(id=group_id, user=user)
@@ -116,8 +99,6 @@ class YardGroupView(UserPermissions, APIView):
         
     #  put to change yardgroup name
     def put(self, request, group_id):
-        if not request.user.is_authenticated:
-            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
         try:
             group = YardGroup.objects.get(id=group_id, user=user)
@@ -131,11 +112,9 @@ class YardGroupView(UserPermissions, APIView):
         except YardGroup.DoesNotExist:
             return Response({"error": "Group not found or unauthorized"}, status=s.HTTP_404_NOT_FOUND)
 
-class YardGroupMethodView(UserPermissions, APIView):
+class YardGroupMethodView(UserPermissions):
     # add yard to yard group
     def post(self, request, yard_id, group_id):
-        if not request.user.is_authenticated:
-            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
         try:
             data = request.data.copy()
@@ -152,8 +131,6 @@ class YardGroupMethodView(UserPermissions, APIView):
 
     # remove yard from yard group
     def delete(self, request, yard_id, group_id):
-        if not request.user.is_authenticated:
-            return Response({"error": "Unauthorized"}, status=s.HTTP_401_UNAUTHORIZED)
         user = request.user
         try:
             yard = Yard.objects.get(id=yard_id, user=user)
