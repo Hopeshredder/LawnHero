@@ -1,26 +1,65 @@
 import { useState, useEffect } from "react";
-import { Modal, Box, Typography, TextField, Button } from "@mui/material";
-import { createYard, updateYard } from "../Api";
+import {
+  Modal,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
+import {
+  createYard,
+  updateYard,
+  createYardGroup,
+  getYardGroup,
+  addYardToYardGroup,
+} from "../Api";
 
 export default function NewYardModal({ open, onClose, onYardCreated, yard }) {
   const [yardName, setYardName] = useState(yard?.yard_name || "");
   const [yardSize, setYardSize] = useState(yard?.yard_size || 0);
   const [soilType, setSoilType] = useState(yard?.soil_type || "Unknown");
   const [grassType, setGrassType] = useState(yard?.grass_type || "Unknown");
-  const [yardGroup, setYardGroup] = useState(yard?.yard_group || "");
-
+  const [yardGroup, setYardGroup] = useState(yard?.yard_group?.id || "");
+  const [newGroupName, setNewGroupName] = useState("");
+  const [availableGroups, setAvailableGroups] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Sync modal fields when editing a yard
   useEffect(() => {
     if (yard) {
       setYardName(yard.yard_name);
       setYardSize(yard.yard_size);
       setSoilType(yard.soil_type);
       setGrassType(yard.grass_type);
-      setYardGroup(yard.yard_group || "");
+      setYardGroup(yard.yard_group?.id || "");
+      setNewGroupName("");
+    } else {
+      setYardName("");
+      setYardSize(0);
+      setSoilType("Unknown");
+      setGrassType("Unknown");
+      setYardGroup("");
+      setNewGroupName("");
     }
-  }, [yard]);
+  }, [yard, open]);
+
+  // Load yard groups for dropdown
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const groups = await getYardGroup();
+        setAvailableGroups(groups);
+      } catch (err) {
+        console.error("Failed to load yard groups", err);
+      }
+    };
+    fetchGroups();
+  }, []);
 
   const handleSave = async () => {
     if (!yardName.trim()) {
@@ -31,35 +70,52 @@ export default function NewYardModal({ open, onClose, onYardCreated, yard }) {
       setError("Yard size must be 0 or greater.");
       return;
     }
+
     setLoading(true);
     setError("");
 
     try {
+      // Determine the final group ID
+      let finalGroupId = yardGroup;
+
+      if (newGroupName?.trim()) {
+        const newGroup = await createYardGroup(newGroupName.trim());
+        finalGroupId = newGroup.id;
+        setAvailableGroups((prev) => [...prev, newGroup]); // add new group to dropdown
+      }
+
+      // Save or update yard
+      let savedYard;
       if (yard?.id) {
-        // if yard already has an ID, edit yard
-        await updateYard(yard.id, {
+        savedYard = await updateYard(yard.id, {
           yard_name: yardName,
           yard_size: Number(yardSize),
           soil_type: soilType || "Unknown",
           grass_type: grassType || "Unknown",
-          yard_group: yardGroup || null,
+          yard_group: finalGroupId || null,
         });
       } else {
-        // create yard
-        await createYard({
+        savedYard = await createYard({
           yard_name: yardName,
           yard_size: Number(yardSize),
           soil_type: soilType || "Unknown",
           grass_type: grassType || "Unknown",
-          yard_group: yardGroup || null,
+          yard_group: finalGroupId || null,
         });
       }
 
+      // Ensure yard is added to the selected group
+      if (finalGroupId) {
+        await addYardToYardGroup(finalGroupId, savedYard.id);
+      }
+
+      // Reset form
       setYardName("");
       setYardSize(0);
       setSoilType("Unknown");
       setGrassType("Unknown");
       setYardGroup("");
+      setNewGroupName("");
 
       onYardCreated();
       onClose();
@@ -130,11 +186,31 @@ export default function NewYardModal({ open, onClose, onYardCreated, yard }) {
             onChange={(e) => setGrassType(e.target.value)}
             disabled={loading}
           />
+
+          <FormControl fullWidth disabled={loading}>
+            <InputLabel id="yard-group-label">Yard Group</InputLabel>
+            <Select
+              labelId="yard-group-label"
+              value={yardGroup?.toString() || ""}
+              onChange={(e) => {
+                setYardGroup(e.target.value);
+                setNewGroupName(""); // clear new group input if selecting existing
+              }}
+            >
+              <MenuItem value="">None</MenuItem>
+              {availableGroups.map((group) => (
+                <MenuItem key={group.id} value={group.id.toString()}>
+                  {group.group_name || "Unnamed Group"}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <TextField
             fullWidth
-            label="Yard Group"
-            value={yardGroup}
-            onChange={(e) => setYardGroup(e.target.value)}
+            label="Or create new group"
+            value={newGroupName}
+            onChange={(e) => setNewGroupName(e.target.value)}
             disabled={loading}
           />
         </Box>
