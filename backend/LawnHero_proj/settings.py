@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "users_app",
     "yard_preferences_app",
     "yard_app",
+    "task_app",
 ]
 
 MIDDLEWARE = [
