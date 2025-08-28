@@ -6,7 +6,7 @@ export const api = axios.create({
     withCredentials: true, // This tells frontend to send Auth cookie with request
 });
 
-/* ---------------------   User Object Interaction   --------------------- */
+/* ------------------------   User Object Interaction   ----------------------- */
 
 // Registers a User
 export const registerUser = async (email, password) => {
@@ -14,7 +14,7 @@ export const registerUser = async (email, password) => {
         const res = await api.post("users/signup/", { email, password });
         return res.data; // { email }
     } catch (err) {
-        console.error("registerUser failed:", err.response?.data || err.message);
+        // console.error("registerUser failed:", err.response?.data || err.message);
         throw err;
     }
 };
@@ -25,7 +25,7 @@ export const loginUser = async (email, password) => {
         const res = await api.post("users/login/", { email, password });
         return res.data; // { email }
     } catch (err) {
-        console.error("loginUser failed:", err.response?.data || err.message);
+        // console.error("loginUser failed:", err.response?.data || err.message);
         throw err;
     }
 };
@@ -36,7 +36,7 @@ export const getUserInfo = async () => {
         const res = await api.get("users/info/");
         return res.data; // { email, is_super }
     } catch (err) {
-        console.error("getUserInfo failed:", err.response?.data || err.message);
+        // console.error("getUserInfo failed:", err.response?.data || err.message);
         throw err;
     }
 };
@@ -47,8 +47,8 @@ export const authMe = async () => {
         const res = await api.get("users/auth/me/");
         return res.data; // { email, is_super } or anon { email:null, is_super:false }
     } catch (err) {
-        console.error("authMe failed:", err.response?.data || err.message);
-        // return a safe fallback if you prefer:
+        // console.error("authMe failed:", err.response?.data || err.message);
+        // return a safe fallback 
         return { email: null, is_super: false };
     }
 };
@@ -59,12 +59,12 @@ export const logoutUser = async () => {
         await api.post("users/logout/");
         return null;
     } catch (err) {
-        console.error("logoutUser failed:", err.response?.data || err.message);
+        // console.error("logoutUser failed:", err.response?.data || err.message);
         throw err;
     }
 };
 
-/* ---------------------   Yard Object Interaction   --------------------- */
+/* ------------------------   Yard Object Interaction   ----------------------- */
 
 // Creates a yard object with the given information
 export const createYard = async (payload) => {
@@ -72,7 +72,7 @@ export const createYard = async (payload) => {
         const res = await api.post('yards/', payload);
         return res.data;
     } catch (err) {
-        console.error("createYard failed:", err.response?.data || err.message);
+        // console.error("createYard failed:", err.response?.data || err.message);
         throw err;
     }
 };
@@ -83,7 +83,7 @@ export const getYard = async (id) => {
         const res = await api.get(`yards/${id}/`);
         return res.data;
     } catch (err) {
-        console.error("getYard failed:", err.response?.data || err.message);
+        // console.error("getYard failed:", err.response?.data || err.message);
         throw err;
     }
 };
@@ -94,7 +94,7 @@ export const getYardList = async () => {
         const res = await api.get('yards/');
         return res.data;
     } catch (err) {
-        console.error("getYardList failed:", err.response?.data || err.message);
+        // console.error("getYardList failed:", err.response?.data || err.message);
         throw err;
     }
 };
@@ -105,7 +105,7 @@ export const updateYard = async (id, payload) => {
         const res = await api.put(`yards/${id}/`, payload);
         return res.data;
     } catch (err) {
-        console.error("updateYard failed:", err.response?.data || err.message);
+        // console.error("updateYard failed:", err.response?.data || err.message);
         throw err;
     }
 }
@@ -116,10 +116,96 @@ export const removeYard = async (id) => {
         const res = await api.delete(`yards/${id}/`);
         return res.data;
     } catch (err) {
-        console.error("removeYard failed:", err.response?.data || err.message);
+        // console.error("removeYard failed:", err.response?.data || err.message);
         throw err;
     }
 }
 
+/* ------------------------   Yard Group Interaction   ------------------------ */
+
+// Creates a yard group (group_name optional)
+export const createYardGroup = async (group_name) => {
+  try {
+    // if a group name is provided, use it. If not, send nothing
+    const payload = group_name ? { group_name } : {};
+    const res = await api.post("yards/yard-groups/", payload);
+    return res.data; // { id, yards: [], group_name, user }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Gets all yard groups
+export const getYardGroup = async () => {
+  try {
+    const res = await api.get("yards/yard-groups/");
+    return res.data; // { id, yards: [<yard objects>], group_name, user }
+  } catch (err) {
+    console.error("getYardGroup failed:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+// Updates a yard group name
+export const updateYardGroup = async (group_id, { group_name }) => {
+  try {
+    const res = await api.put(`yards/yard-groups/${group_id}/`, { group_name });
+    return res.data; // { id, yards: [<yard objects>], group_name, user }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Removes a yard group object
+export const removeYardGroup = async (group_id) => {
+    try {
+        const res = await api.delete(`yards/yard-groups/${group_id}/`);
+        return res.data; // returns null
+    } catch (err) {
+        throw err;
+    }
+}
+
+// Adds a yard to a given yard group
+export const addYardToYardGroup = async (group_id, yard_id) => {
+  try {
+    const res = await api.post(`yards/yard-groups/${group_id}/yard/${yard_id}/`);
+    return res.data; // { success: "Yard added to group" } or { error: "error msg" }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Removes a yard from a given yard group
+export const removeYardFromGroup = async (group_id, yard_id) => {
+  try {
+    const res = await api.delete(`yards/yard-groups/${group_id}/yard/${yard_id}/`);
+    if (res.status === 204) return null;
+    return res.data; // { success: "Yard removed from group" } or { error: "error msg" }
+  } catch (err) {
+    throw err;
+  }
+};
+
+
 /* ---------------------   Yard Preferences Interaction   --------------------- */
-// To Do
+
+// Gets the preferences of a given yard
+export const getPrefs = async (yard_id) => {
+  try {
+    const res = await api.get(`yard_pref/${yard_id}/`);
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Updates the yard's preferences, partial data allowed
+export const updatePrefs = async (yard_id, payload) => {
+  try {
+    const res = await api.post(`yard_pref/${yard_id}/`, payload);
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+};
