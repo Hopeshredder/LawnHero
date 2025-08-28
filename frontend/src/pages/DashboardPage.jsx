@@ -31,6 +31,7 @@ export default function Dashboard() {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedYardId, setSelectedYardId] = useState(null);
+  const [editYard, setEditYard] = useState(null);
 
   const handleDeleteClick = (yardId) => {
     setSelectedYardId(yardId);
@@ -72,14 +73,23 @@ export default function Dashboard() {
                   </>
                 }
                 actions={
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    size="small"
-                    onClick={() => handleDeleteClick(yard.id)}
-                  >
-                    Delete
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => setEditYard(yard)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      onClick={() => handleDeleteClick(yard.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 }
               />
             ))
@@ -102,9 +112,13 @@ export default function Dashboard() {
         </Button>
       </div>
       <NewYardModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        open={!!editYard || modalOpen}
+        onClose={() => {
+          setEditYard(null);
+          setModalOpen(false);
+        }}
         onYardCreated={fetchYards}
+        yard={editYard}
       />
       <ConfirmModal
         open={confirmOpen}

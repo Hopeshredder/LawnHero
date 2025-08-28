@@ -1,34 +1,59 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Box, Typography, TextField, Button } from "@mui/material";
-import { createYard } from "../Api";
+import { createYard, updateYard } from "../Api";
 
-export default function NewYardModal({ open, onClose, onYardCreated }) {
-  const [yardName, setYardName] = useState("");
-  const [yardSize, setYardSize] = useState(0);
-  const [soilType, setSoilType] = useState("Unknown");
-  const [grassType, setGrassType] = useState("Unknown");
-  const [yardGroup, setYardGroup] = useState("");
+export default function NewYardModal({ open, onClose, onYardCreated, yard }) {
+  const [yardName, setYardName] = useState(yard?.yard_name || "");
+  const [yardSize, setYardSize] = useState(yard?.yard_size || 0);
+  const [soilType, setSoilType] = useState(yard?.soil_type || "Unknown");
+  const [grassType, setGrassType] = useState(yard?.grass_type || "Unknown");
+  const [yardGroup, setYardGroup] = useState(yard?.yard_group || "");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (yard) {
+      setYardName(yard.yard_name);
+      setYardSize(yard.yard_size);
+      setSoilType(yard.soil_type);
+      setGrassType(yard.grass_type);
+      setYardGroup(yard.yard_group || "");
+    }
+  }, [yard]);
 
   const handleSave = async () => {
     if (!yardName.trim()) {
       setError("Yard name is required.");
       return;
     }
-
+    if (Number(yardSize) < 0) {
+      setError("Yard size must be 0 or greater.");
+      return;
+    }
     setLoading(true);
     setError("");
 
     try {
-      await createYard({
-        yard_name: yardName,
-        yard_size: Number(yardSize),
-        soil_type: soilType || "Unknown",
-        grass_type: grassType || "Unknown",
-        yard_group: yardGroup || null,
-      });
+      if (yard?.id) {
+        // if yard already has an ID, edit yard
+        await updateYard(yard.id, {
+          yard_name: yardName,
+          yard_size: Number(yardSize),
+          soil_type: soilType || "Unknown",
+          grass_type: grassType || "Unknown",
+          yard_group: yardGroup || null,
+        });
+      } else {
+        // create yard
+        await createYard({
+          yard_name: yardName,
+          yard_size: Number(yardSize),
+          soil_type: soilType || "Unknown",
+          grass_type: grassType || "Unknown",
+          yard_group: yardGroup || null,
+        });
+      }
 
       setYardName("");
       setYardSize(0);
@@ -39,7 +64,7 @@ export default function NewYardModal({ open, onClose, onYardCreated }) {
       onYardCreated();
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to create yard.");
+      setError(err.response?.data?.message || "Failed to save yard.");
     } finally {
       setLoading(false);
     }
@@ -54,20 +79,27 @@ export default function NewYardModal({ open, onClose, onYardCreated }) {
           left: "50%",
           transform: "translate(-50%, -50%)",
           width: { xs: "90%", sm: 400 },
-          bgcolor: "#f9f0dd", 
-          borderRadius: 8,     
+          bgcolor: "#f9f0dd",
+          borderRadius: 8,
           boxShadow: 6,
-          p: { xs: 3, sm: 4 }, 
+          p: { xs: 3, sm: 4 },
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
         }}
       >
-        <Typography variant="h5" gutterBottom sx={{ mb: 2, color: "#333" }}>
-          Add New Yard
+        <Typography variant="h6" gutterBottom sx={{ mb: 2, color: "#333" }}>
+          {yard?.id ? "Edit Yard" : "Add New Yard"}
         </Typography>
 
-        <Box sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box
+          sx={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
           <TextField
             fullWidth
             label="Yard Name"
@@ -82,6 +114,7 @@ export default function NewYardModal({ open, onClose, onYardCreated }) {
             value={yardSize}
             onChange={(e) => setYardSize(e.target.value)}
             disabled={loading}
+            inputProps={{ min: 0 }}
           />
           <TextField
             fullWidth
@@ -112,7 +145,13 @@ export default function NewYardModal({ open, onClose, onYardCreated }) {
           </Typography>
         )}
 
-        <Box mt={3} display="flex" justifyContent="flex-end" gap={2} sx={{ width: "100%" }}>
+        <Box
+          mt={3}
+          display="flex"
+          justifyContent="flex-end"
+          gap={2}
+          sx={{ width: "100%" }}
+        >
           <Button variant="outlined" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
