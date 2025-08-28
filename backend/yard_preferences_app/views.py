@@ -1,11 +1,7 @@
-from django.shortcuts import get_object_or_404
-
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status as s
 
-from users_app.authentication import CookieTokenAuthentication
+from users_app.views import UserPermissions
 
 from .models import Preferences
 from .serializers import YardPreferencesSerializer
@@ -15,10 +11,7 @@ from yard_app.models import Yard
 
 
 # Create your views here.
-class YardPreferences(APIView):
-    authentication_classes = [CookieTokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
+class YardPreferences(UserPermissions):
     def _get_user_yards(self, request, yard_id):
         # Ensures that the yard requested belongs to the requesting user
 
