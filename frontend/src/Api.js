@@ -1,6 +1,6 @@
 import axios from "axios";
 const API_BASE_URL =
-  import.meta.env.VITE_BASE_URL || "http://localhost:8000/api/v1/";
+  import.meta.env.VITE_BASE_URL || "http://127.0.0.1:8000/api/v1/";
 
 // Defines the base URL used to access all backend Django calls
 export const api = axios.create({
