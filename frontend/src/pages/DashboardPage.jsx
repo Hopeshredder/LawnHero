@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getYardList } from "../Api";
+import { getYardList, getYardGroup } from "../Api";
 import Button from "@mui/material/Button";
 import NewYardModal from "../components/NewYardModal";
 import CustomAccordion from "../components/MUIAccordion";
@@ -13,6 +13,12 @@ export default function Dashboard() {
 
   const [modalOpen, setModalOpen] = useState(false);
 
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedYardId, setSelectedYardId] = useState(null);
+  const [editYard, setEditYard] = useState(null);
+
+  const [groups, setGroups] = useState([]);
+  console.log(groups)
   const fetchYards = async () => {
     try {
       const data = await getYardList();
@@ -29,9 +35,20 @@ export default function Dashboard() {
     fetchYards();
   }, []);
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [selectedYardId, setSelectedYardId] = useState(null);
-  const [editYard, setEditYard] = useState(null);
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const data = await getYardGroup();
+        setGroups(data);
+      } catch (err) {
+        setError(err.message || "Failed to load yard groups");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroups();
+  }, []);
 
   const handleDeleteClick = (yardId) => {
     setSelectedYardId(yardId);
