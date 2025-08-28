@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { registerUser } from "../Api";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import Logo from "../assets/images/logo-trans.png";
 
 const RegisterPage = () => {
@@ -10,21 +11,21 @@ const RegisterPage = () => {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleRegister = async () => {
     setError("");
     try {
       const user = await registerUser(email, password, name);
       console.log("Registered user:", user);
+      await login(email, password);
+      navigate("/todo");
     } catch (err) {
       setError(
         err.response?.data?.detail ||
           JSON.stringify(err.response?.data) ||
           "Registration failed"
       );
-    } finally {
-      console.log("Registering:", { email, password, name });
-      navigate("/todo");
     }
   };
 
