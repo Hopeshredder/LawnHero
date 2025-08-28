@@ -58,15 +58,25 @@ class TaskListView(UserPermissions):
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data, status=s.HTTP_200_OK)
 
+
 class TaskDueAndCompletedView(UserPermissions):
     # get 10 tasks coming due and 10 tasks last completed, returned as separate arrays
     def get(self, request, yard_id):
-        upcoming_tasks = Task.objects.filter(yard=yard_id, day_scheduled__gte=datetime.date.today()).order_by('day_scheduled')[:10]
-        recent_tasks = Task.objects.filter(yard=yard_id, day_completed__isnull=False).order_by('-day_completed')[:10]
+        # upcoming tasks that are not complete
+        upcoming_tasks = Task.objects.filter(
+            yard=yard_id,
+            day_scheduled__gte=datetime.date.today(),
+            day_completed__isnull=True,
+        ).order_by("day_scheduled")[:10]
+        recent_tasks = Task.objects.filter(
+            yard=yard_id, day_completed__isnull=False
+        ).order_by("-day_completed")[:10]
         upcoming_serializer = TaskSerializer(upcoming_tasks, many=True)
         recent_serializer = TaskSerializer(recent_tasks, many=True)
-        return Response({
-            "upcoming_tasks": upcoming_serializer.data,
-            "recent_tasks": recent_serializer.data
-        }, status=s.HTTP_200_OK)
-    
+        return Response(
+            {
+                "upcoming_tasks": upcoming_serializer.data,
+                "recent_tasks": recent_serializer.data,
+            },
+            status=s.HTTP_200_OK,
+        )
