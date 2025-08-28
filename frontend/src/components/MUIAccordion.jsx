@@ -8,7 +8,7 @@ export default function CustomAccordion({ title, content, actions }) {
   return (
     <Accordion
       sx={{
-        borderRadius: "1rem",
+        borderRadius: "1rem !important",
         boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
         backgroundColor: "var(--color-light)",
         "&:before": { display: "none" },
@@ -32,6 +32,8 @@ export default function CustomAccordion({ title, content, actions }) {
       <AccordionDetails
         sx={{
           backgroundColor: "var(--color-light)",
+          borderBottomLeftRadius: "1rem !important",
+          borderBottomRightRadius: "1rem !important",
           borderTop: "1px solid var(--color-medium)",
           "& .MuiTypography-root": {
             color: "var(--color-dark)",
