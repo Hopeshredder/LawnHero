@@ -5,7 +5,7 @@ export default function NotFound() {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ backgroundColor: "var(--color-darkest)", color: "var(--color-lightest)" }}
+      style={{ backgroundColor: "var(--color-lightest)", color: "var(--color-lightest)" }}
     >
       <img
         src={Logo}
