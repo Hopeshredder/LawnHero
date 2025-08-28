@@ -13,10 +13,10 @@ export default function NewYardModal({ open, onClose, onYardCreated }) {
   const [error, setError] = useState("");
 
   const handleSave = async () => {
-    // if (!yardName.trim()) {
-    //   setError("Yard name is required.");
-    //   return;
-    // }
+    if (!yardName.trim()) {
+      setError("Yard name is required.");
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -53,62 +53,66 @@ export default function NewYardModal({ open, onClose, onYardCreated }) {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: { xs: 300, sm: 400 },
-          bgcolor: "background.paper",
-          borderRadius: 2,
-          boxShadow: 24,
-          p: 4,
+          width: { xs: "90%", sm: 400 },
+          bgcolor: "#f9f0dd", 
+          borderRadius: 8,     
+          boxShadow: 6,
+          p: { xs: 3, sm: 4 }, 
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h5" gutterBottom sx={{ mb: 2, color: "#333" }}>
           Add New Yard
         </Typography>
 
-        <TextField
-          fullWidth
-          label="Yard Name"
-          value={yardName}
-          onChange={(e) => setYardName(e.target.value)}
-          margin="normal"
-          disabled={loading}
-        />
-        <TextField
-          fullWidth
-          label="Yard Size"
-          type="number"
-          value={yardSize}
-          onChange={(e) => setYardSize(e.target.value)}
-          margin="normal"
-          disabled={loading}
-        />
-        <TextField
-          fullWidth
-          label="Soil Type"
-          value={soilType}
-          onChange={(e) => setSoilType(e.target.value)}
-          margin="normal"
-          disabled={loading}
-        />
-        <TextField
-          fullWidth
-          label="Grass Type"
-          value={grassType}
-          onChange={(e) => setGrassType(e.target.value)}
-          margin="normal"
-          disabled={loading}
-        />
-        <TextField
-          fullWidth
-          label="Yard Group"
-          value={yardGroup}
-          onChange={(e) => setYardGroup(e.target.value)}
-          margin="normal"
-          disabled={loading}
-        />
+        <Box sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 2 }}>
+          <TextField
+            fullWidth
+            label="Yard Name"
+            value={yardName}
+            onChange={(e) => setYardName(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            fullWidth
+            label="Yard Size"
+            type="number"
+            value={yardSize}
+            onChange={(e) => setYardSize(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            fullWidth
+            label="Soil Type"
+            value={soilType}
+            onChange={(e) => setSoilType(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            fullWidth
+            label="Grass Type"
+            value={grassType}
+            onChange={(e) => setGrassType(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            fullWidth
+            label="Yard Group"
+            value={yardGroup}
+            onChange={(e) => setYardGroup(e.target.value)}
+            disabled={loading}
+          />
+        </Box>
 
-        {error && <Typography color="error">{error}</Typography>}
+        {error && (
+          <Typography color="error" sx={{ mt: 2 }}>
+            {error}
+          </Typography>
+        )}
 
-        <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>
+        <Box mt={3} display="flex" justifyContent="flex-end" gap={2} sx={{ width: "100%" }}>
           <Button variant="outlined" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
