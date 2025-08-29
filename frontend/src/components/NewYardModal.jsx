@@ -197,7 +197,7 @@ export default function NewYardModal({ open, onClose, onYardCreated, yard }) {
                 setNewGroupName(""); // clear new group input if selecting existing
               }}
             >
-              <MenuItem value="">None</MenuItem>
+              <MenuItem value="">N/A</MenuItem>
               {availableGroups.map((group) => (
                 <MenuItem key={group.id} value={group.id.toString()}>
                   {group.group_name || "Unnamed Group"}

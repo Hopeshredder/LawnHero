@@ -18,7 +18,7 @@ export default function Dashboard() {
   const [editYard, setEditYard] = useState(null);
 
   const [groups, setGroups] = useState([]);
-  console.log(groups)
+  //console.log(groups)
   const fetchYards = async () => {
     try {
       const data = await getYardList();
@@ -33,22 +33,19 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchYards();
-  }, []);
-
-  useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const data = await getYardGroup();
-        setGroups(data);
-      } catch (err) {
-        setError(err.message || "Failed to load yard groups");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchGroups();
   }, []);
+
+  const fetchGroups = async () => {
+    try {
+      const data = await getYardGroup();
+      setGroups(data);
+    } catch (err) {
+      setError(err.message || "Failed to load yard groups");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDeleteClick = (yardId) => {
     setSelectedYardId(yardId);
@@ -68,6 +65,11 @@ export default function Dashboard() {
     }
   };
 
+  const handleYardCreated = async () => {
+    await fetchGroups(); // re-fetch groups so new group names exist
+    await fetchYards(); // re-fetch yards
+  };
+
   return (
     <div className="px-4 sm:px-8 md:px-16 lg:px-24 flex flex-col items-center justify-start min-h-screen">
       <h1>Yards</h1>
@@ -77,7 +79,7 @@ export default function Dashboard() {
       <div className="border border-gray-300 rounded-lg p-4 w-full flex flex-col items-center justify-center">
         <div className="w-full space-y-4 pb-8 flex flex-col">
           {yards.length > 0 ? (
-            yards.map((yard) => (
+            [...yards].reverse().map((yard) => (
               <CustomAccordion
                 key={yard.id}
                 title={yard.yard_name}
@@ -86,7 +88,13 @@ export default function Dashboard() {
                     <div>Size: {yard.yard_size}</div>
                     <div>Soil: {yard.soil_type}</div>
                     <div>Grass: {yard.grass_type}</div>
-                    <div>Group: {yard.yard_group || "N/A"}</div>
+                    <div>
+                      Group:{" "}
+                      {yard.yard_group
+                        ? groups.find((g) => g.id === yard.yard_group)
+                            ?.group_name || "Unnamed Group"
+                        : "N/A"}
+                    </div>
                   </>
                 }
                 actions={
@@ -134,7 +142,7 @@ export default function Dashboard() {
           setEditYard(null);
           setModalOpen(false);
         }}
-        onYardCreated={fetchYards}
+        onYardCreated={handleYardCreated}
         yard={editYard}
       />
       <ConfirmModal
