@@ -7,9 +7,11 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 export default function CustomAccordion({ title, content, actions }) {
   return (
     <Accordion
+      className="w-full"
       sx={{
         borderRadius: "1rem !important",
         boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+        border: "1px solid #e0e0e0",
         backgroundColor: "var(--color-light)",
         "&:before": { display: "none" },
       }}
