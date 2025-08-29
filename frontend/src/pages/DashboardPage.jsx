@@ -18,11 +18,16 @@ export default function Dashboard() {
   const [editYard, setEditYard] = useState(null);
 
   const [groups, setGroups] = useState([]);
-  //console.log(groups)
+
   const fetchYards = async () => {
     try {
       const data = await getYardList();
-      setYards(data || []);
+      console.log(data)
+      if (Array.isArray(data)) {
+        setYards(data);
+      } else {
+        setYards([]);
+      }
     } catch (err) {
       setError("Failed to fetch yards");
       setYards([]);
@@ -37,15 +42,20 @@ export default function Dashboard() {
   }, []);
 
   const fetchGroups = async () => {
-    try {
-      const data = await getYardGroup();
-      setGroups(data);
-    } catch (err) {
-      setError(err.message || "Failed to load yard groups");
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        const groups = await getYardGroup();
+        if (Array.isArray(groups)) {
+          setGroups(groups);
+        } else {
+          setGroups([]); 
+        }
+      } catch (err) {
+        setError(err.message || "Failed to load yard groups");
+        setGroups([]); 
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const handleDeleteClick = (yardId) => {
     setSelectedYardId(yardId);
