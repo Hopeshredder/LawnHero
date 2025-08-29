@@ -27,7 +27,6 @@ export default function Dashboard() {
   const fetchYards = async () => {
     try {
       const data = await getYardList();
-      //console.log(data);
       if (Array.isArray(data)) {
         setYards(data);
       } else {
