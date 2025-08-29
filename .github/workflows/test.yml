@@ -5,8 +5,11 @@ on:
   push:
 
 jobs:
-  test:
+  backend-tests:
     runs-on: ubuntu-latest
+    environment: backend.env
+    env:
+      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
     services:
       postgres:
         image: postgres:15
@@ -44,15 +47,14 @@ jobs:
         run: |
           pytest
 
-# Should work when frontend tests are implimented
-  # frontend-tests:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '18'
-  #     - run: npm ci
-  #       working-directory: frontend
-  #     - run: npm test
-  #       working-directory: frontend
+  frontend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npm ci
+        working-directory: frontend
+      - run: npm test
+        working-directory: frontend
