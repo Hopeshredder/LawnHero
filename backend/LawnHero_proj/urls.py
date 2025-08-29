@@ -18,9 +18,9 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/v1/users/', include("users_app.urls")),
-    path('api/v1/yard_pref/', include("yard_preferences_app.urls")),
-    path('api/v1/yards/', include("yard_app.urls")),
-    path('api/v1/tasks/', include("task_app.urls")),
+    path("admin/", admin.site.urls),
+    path("api/v1/users/", include(("users_app.urls", "users_app"), namespace="users_app")),
+    path("api/v1/yard_pref/", include("yard_preferences_app.urls")),
+    path("api/v1/yards/", include("yard_app.urls")),
+    path("api/v1/tasks/", include("task_app.urls")),
 ]
