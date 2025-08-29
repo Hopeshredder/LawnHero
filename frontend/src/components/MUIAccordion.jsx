@@ -28,7 +28,11 @@ export default function CustomAccordion({ title, content, actions }) {
           },
         }}
       >
-        <Typography component="span">{title}</Typography>
+        {typeof title === "string" ? (
+          <Typography component="span">{title}</Typography>
+        ) : (
+          title // render JSX (like <input>) directly
+        )}
       </AccordionSummary>
 
       <AccordionDetails

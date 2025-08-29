@@ -18,14 +18,20 @@ import {
   addYardToYardGroup,
 } from "../Api";
 
-export default function NewYardModal({ open, onClose, onYardCreated, yard }) {
+export default function NewYardModal({
+  open,
+  onClose,
+  onYardCreated,
+  yard,
+  groups,
+}) {
   const [yardName, setYardName] = useState(yard?.yard_name || "");
   const [yardSize, setYardSize] = useState(yard?.yard_size || 0);
   const [soilType, setSoilType] = useState(yard?.soil_type || "Unknown");
   const [grassType, setGrassType] = useState(yard?.grass_type || "Unknown"); // add fields for zip or address, convert to lat lon for backend
   const [yardGroup, setYardGroup] = useState(yard?.yard_group?.id || "");
   const [newGroupName, setNewGroupName] = useState("");
-  const [availableGroups, setAvailableGroups] = useState([]);
+  const [availableGroups, setAvailableGroups] = useState(groups);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -48,25 +54,9 @@ export default function NewYardModal({ open, onClose, onYardCreated, yard }) {
     }
   }, [yard, open]);
 
-  // Load yard groups for dropdown
   useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const groups = await getYardGroup();
-        if (Array.isArray(groups)) {
-          setAvailableGroups(groups);
-        } else {
-          setAvailableGroups([]); 
-        }
-      } catch (err) {
-        setError(err.message || "Failed to load yard groups");
-        setGroups([]); 
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchGroups();
-  }, []);
+    setAvailableGroups(groups);
+  }, [groups]);
 
   const handleSave = async () => {
     if (!yardName.trim()) {
