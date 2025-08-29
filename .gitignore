@@ -58,7 +58,7 @@ staticfiles/
 
 # Migrations (optional — keep if you want history in VCS)
 # Uncomment if you don’t want them tracked:
-*/migrations/*.py
+*/*/migrations/*.py
 !*/migrations/__init__.py
 
 # ========================
