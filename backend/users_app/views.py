@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout as django_logout
 
 from rest_framework.views import APIView
 from rest_framework import status as s
@@ -72,12 +72,18 @@ class UserPermissions(APIView):
 
 class Logout(UserPermissions):
     def post(self, request):
-        user = request.user
-        token = user.auth_token
-        logout(request)
-        token.delete()
-        response = Response({f"{user} logged out"}, status=s.HTTP_204_NO_CONTENT)
-        response.delete_cookie(AUTH_TOKEN_COOKIE)
+        # delete token if present (no errors if token doesn't exist)
+        Token.objects.filter(user=request.user).delete()
+
+        # Logout from backend
+        django_logout(request)
+        response = Response(status=s.HTTP_204_NO_CONTENT)
+
+        # Checks if the AUTH_TOKEN cookie exists from the request
+        # `delete_cookie()` doesn't remove 'AUTH_TOKEN' from cookies it
+        # adds Set-Cookie with empty value and `max_age=0`/expired date and sends that in the response
+        if AUTH_TOKEN_COOKIE in request.COOKIES:
+            response.delete_cookie(AUTH_TOKEN_COOKIE)
         return response
 
 
