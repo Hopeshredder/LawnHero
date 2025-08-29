@@ -77,51 +77,117 @@ export default function Dashboard() {
       {loading && <p>Loading yards...</p>}
       {error && <p className="text-red-500">{error}</p>}
       <div className="border border-gray-300 rounded-lg p-4 w-full flex flex-col items-center justify-center">
-        <div className="w-full space-y-4 pb-8 flex flex-col">
-          {yards.length > 0 ? (
-            [...yards].reverse().map((yard) => (
-              <CustomAccordion
-                key={yard.id}
-                title={yard.yard_name}
-                content={
-                  <>
-                    <div>Size: {yard.yard_size}</div>
-                    <div>Soil: {yard.soil_type}</div>
-                    <div>Grass: {yard.grass_type}</div>
-                    <div>
-                      Group:{" "}
-                      {yard.yard_group
-                        ? groups.find((g) => g.id === yard.yard_group)
-                            ?.group_name || "Unnamed Group"
-                        : "N/A"}
-                    </div>
-                  </>
-                }
-                actions={
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => setEditYard(yard)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      size="small"
-                      onClick={() => handleDeleteClick(yard.id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                }
-              />
-            ))
-          ) : (
-            <p>{error || "No yards found."}</p>
-          )}
-        </div>
+        {/* Groups with yards */}
+        {groups.map((group) => {
+          const groupYards = yards.filter(
+            (yard) => yard.yard_group === group.id
+          );
+
+          if (groupYards.length === 0) return null; // skip groups with no yards, need to auto delete groups with no yards?
+
+          return (
+            <CustomAccordion
+              key={group.id}
+              title={group.group_name}
+              content={
+                <div className="space-y-2">
+                  {groupYards.map((yard) => (
+                    <CustomAccordion
+                      key={yard.id}
+                      title={yard.yard_name}
+                      content={
+                        <>
+                          <div>Size: {yard.yard_size}</div>
+                          <div>Soil: {yard.soil_type}</div>
+                          <div>Grass: {yard.grass_type}</div>
+                          <div>
+                            Group:{" "}
+                            {yard.yard_group
+                              ? groups.find((g) => g.id === yard.yard_group)
+                                  ?.group_name || "Unnamed Group"
+                              : "N/A"}
+                          </div>
+                        </>
+                      }
+                      actions={
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => setEditYard(yard)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            onClick={() => handleDeleteClick(yard.id)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      }
+                    />
+                  ))}
+                </div>
+              }
+            />
+          );
+        })}
+
+        {/* Yards without a group */}
+        {yards.some((yard) => !yard.yard_group) && (
+          <CustomAccordion
+            key="ungrouped"
+            title="Ungrouped Yards"
+            content={
+              <div className="space-y-2">
+                {yards
+                  .filter((yard) => !yard.yard_group)
+                  .map((yard) => (
+                    <CustomAccordion
+                      key={yard.id}
+                      title={yard.yard_name}
+                      content={
+                        <>
+                          <div>Size: {yard.yard_size}</div>
+                          <div>Soil: {yard.soil_type}</div>
+                          <div>Grass: {yard.grass_type}</div>
+                          <div>
+                            Group:{" "}
+                            {yard.yard_group
+                              ? groups.find((g) => g.id === yard.yard_group)
+                                  ?.group_name || "Unnamed Group"
+                              : "N/A"}
+                          </div>
+                        </>
+                      }
+                      actions={
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => setEditYard(yard)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            onClick={() => handleDeleteClick(yard.id)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      }
+                    />
+                  ))}
+              </div>
+            }
+          />
+        )}
 
         <Button
           variant="contained"
