@@ -3,7 +3,7 @@ import { getYardList, getYardGroup } from "../Api";
 import Button from "@mui/material/Button";
 import NewYardModal from "../components/NewYardModal";
 import CustomAccordion from "../components/MUIAccordion";
-import { removeYard } from "../Api";
+import { removeYard, removeYardGroup, updateYardGroup } from "../Api";
 import ConfirmModal from "../components/ConfirmModal";
 
 export default function Dashboard() {
@@ -19,10 +19,14 @@ export default function Dashboard() {
 
   const [groups, setGroups] = useState([]);
 
+  const [editingGroupId, setEditingGroupId] = useState(null);
+  const [editingGroupName, setEditingGroupName] = useState("");
+  const [confirmGroupOpen, setConfirmGroupOpen] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
+
   const fetchYards = async () => {
     try {
       const data = await getYardList();
-      console.log(data)
       if (Array.isArray(data)) {
         setYards(data);
       } else {
@@ -42,20 +46,20 @@ export default function Dashboard() {
   }, []);
 
   const fetchGroups = async () => {
-      try {
-        const groups = await getYardGroup();
-        if (Array.isArray(groups)) {
-          setGroups(groups);
-        } else {
-          setGroups([]); 
-        }
-      } catch (err) {
-        setError(err.message || "Failed to load yard groups");
-        setGroups([]); 
-      } finally {
-        setLoading(false);
+    try {
+      const groups = await getYardGroup();
+      if (Array.isArray(groups)) {
+        setGroups(groups);
+      } else {
+        setGroups([]);
       }
-    };
+    } catch (err) {
+      setError(err.message || "Failed to load yard groups");
+      setGroups([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDeleteClick = (yardId) => {
     setSelectedYardId(yardId);
@@ -80,6 +84,47 @@ export default function Dashboard() {
     await fetchYards(); // re-fetch yards
   };
 
+  // Start editing a group
+  const handleEditGroup = (group) => {
+    setEditingGroupId(group.id);
+    setEditingGroupName(group.group_name);
+  };
+
+  // Save group name change
+  const handleSaveGroupName = async (groupId) => {
+    try {
+      await updateYardGroup(groupId, { group_name: editingGroupName });
+      await fetchGroups(); // refresh groups after update
+    } catch (err) {
+      alert("Failed to update group name");
+    } finally {
+      setEditingGroupId(null);
+      setEditingGroupName("");
+    }
+  };
+
+  // Open confirm modal for deleting a group
+  const handleDeleteGroupClick = (groupId) => {
+    setSelectedGroupId(groupId);
+    setConfirmGroupOpen(true);
+  };
+
+  // Confirm deletion of group
+  const handleConfirmDeleteGroup = async () => {
+    if (!selectedGroupId) return;
+    try {
+      // Optional: backend already handles SET_NULL for yards
+      await removeYardGroup(selectedGroupId);
+      fetchGroups();
+      fetchYards();
+    } catch (err) {
+      console.error("Failed to delete group", err);
+      alert("Failed to delete group.");
+    } finally {
+      setSelectedGroupId(null);
+    }
+  };
+
   return (
     <div className="px-4 sm:px-8 md:px-16 lg:px-24 flex flex-col items-center justify-start min-h-screen">
       <h1>Yards</h1>
@@ -93,12 +138,40 @@ export default function Dashboard() {
             (yard) => yard.yard_group === group.id
           );
 
-          if (groupYards.length === 0) return null; // skip groups with no yards, need to auto delete groups with no yards?
+          if (groupYards.length === 0) return null; // skip groups with no yards
 
           return (
             <CustomAccordion
               key={group.id}
-              title={group.group_name}
+              title={
+                editingGroupId === group.id ? (
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault(); // stop default submit
+                      await handleSaveGroupName(group.id);
+                    }}
+                    onClick={(e) => e.stopPropagation()} // stop accordion toggle
+                    style={{ width: "100%" }}
+                  >
+                    <input
+                      type="text"
+                      value={editingGroupName}
+                      autoFocus
+                      onChange={(e) => setEditingGroupName(e.target.value)}
+                      onBlur={async () => {
+                        if (editingGroupName.trim() !== group.group_name) {
+                          await handleSaveGroupName(group.id);
+                        } else {
+                          setEditingGroupId(null); // exit edit mode if nothing changed
+                        }
+                      }}
+                      className="w-full px-2 py-1 rounded border border-gray-300"
+                    />
+                  </form>
+                ) : (
+                  group.group_name
+                )
+              }
               content={
                 <div className="space-y-2">
                   {groupYards.map((yard) => (
@@ -140,6 +213,25 @@ export default function Dashboard() {
                       }
                     />
                   ))}
+                </div>
+              }
+              actions={
+                <div className="flex gap-2">
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handleEditGroup(group)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    onClick={() => handleDeleteGroupClick(group.id)}
+                  >
+                    Delete
+                  </Button>
                 </div>
               }
             />
@@ -220,12 +312,19 @@ export default function Dashboard() {
         }}
         onYardCreated={handleYardCreated}
         yard={editYard}
+        groups={groups}
       />
       <ConfirmModal
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={handleConfirmDelete}
         message="Are you sure you want to delete this yard?"
+      />
+      <ConfirmModal
+        open={confirmGroupOpen}
+        onClose={() => setConfirmGroupOpen(false)}
+        onConfirm={handleConfirmDeleteGroup}
+        message="Are you sure you want to delete this group? All yards in this group will be unassigned."
       />
     </div>
   );
