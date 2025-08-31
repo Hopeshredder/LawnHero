@@ -4,10 +4,11 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
-export default function CustomAccordion({ title, content, actions }) {
+export default function CustomAccordion({ title, content, actions, onChange }) {
   return (
     <Accordion
       className="w-full"
+      onChange={onChange}
       sx={{
         borderRadius: "1rem !important",
         boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
