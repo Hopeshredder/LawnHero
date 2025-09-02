@@ -27,11 +27,16 @@ export default function Dashboard() {
   const fetchYards = async () => {
     try {
       const data = await getYardList();
-      if (Array.isArray(data)) {
-        setYards(data);
-      } else {
-        setYards([]);
-      }
+      const normalized = Array.isArray(data)
+        ? data.map((y) => ({
+            ...y,
+            yard_group:
+              typeof y.yard_group === "object" && y.yard_group !== null
+                ? y.yard_group.id
+                : y.yard_group, // keep as number or null
+          }))
+        : [];
+      setYards(normalized);
     } catch (err) {
       setError("Failed to fetch yards");
       setYards([]);
