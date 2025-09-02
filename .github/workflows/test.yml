@@ -46,16 +46,29 @@ jobs:
         run: |
           pytest
 
+# ORIGINAL TESTS
+  # frontend-tests:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '18'
+  #     - run: npm ci
+  #       working-directory: frontend
+  #     - run: npm test
+  #       working-directory: frontend
+
   frontend-tests:
     runs-on: ubuntu-latest
-    env:
-      NODE_OPTIONS: --import=tsx
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - run: npm ci
+      - name: Install deps
         working-directory: frontend
-      - run: npm test
+        run: npm ci
+      - name: Run Cypress (Chrome headless)
         working-directory: frontend
+        run: npx cypress run --browser chrome --headless
