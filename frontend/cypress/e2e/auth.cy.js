@@ -92,3 +92,28 @@ describe('New User Registration Flow', () => {
         cy.url().should('include', '/todo');
     })
 });
+
+
+// TO-DO: Test for Error Page
+
+
+// TO-DO: Test for redirect to Login if accessing a private route
+describe("Redirect on attempt to reach a private route if not logged in", () => {
+    it("Attempts to access the /todo page without signing in", () => {
+        // set authMe response
+        cy.intercept("GET", "**/users/auth/me/", {statusCode: 200, body: {email: null, is_super: false}}).as("initialAuth");
+        // set yards response
+        cy.intercept("GET", "**/yards/", {statusCode: 200, body: []}).as('yardList')
+
+        // attempt to visit unauthorized route
+        cy.visit("/todo")
+
+        // checks user auth
+        cy.wait('@initialAuth')
+
+        // check for redirect to login page
+        cy.url().should('include', '/login')
+        
+
+    })
+})
