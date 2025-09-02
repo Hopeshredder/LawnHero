@@ -94,9 +94,6 @@ describe('New User Registration Flow', () => {
 });
 
 
-// TO-DO: Test for Error Page
-
-
 // TO-DO: Test for redirect to Login if accessing a private route
 describe("Redirect on attempt to reach a private route if not logged in", () => {
     it("Attempts to access the /todo page without signing in", () => {
