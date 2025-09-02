@@ -48,6 +48,8 @@ jobs:
 
   frontend-tests:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --imports=tsx
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
