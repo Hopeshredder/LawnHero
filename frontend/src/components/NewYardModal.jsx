@@ -22,7 +22,7 @@ export default function NewYardModal({ open, onClose, onYardCreated, yard }) {
   const [yardName, setYardName] = useState(yard?.yard_name || "");
   const [yardSize, setYardSize] = useState(yard?.yard_size || 0);
   const [soilType, setSoilType] = useState(yard?.soil_type || "Unknown");
-  const [grassType, setGrassType] = useState(yard?.grass_type || "Unknown");
+  const [grassType, setGrassType] = useState(yard?.grass_type || "Unknown"); // add fields for zip or address, convert to lat lon for backend
   const [yardGroup, setYardGroup] = useState(yard?.yard_group?.id || "");
   const [newGroupName, setNewGroupName] = useState("");
   const [availableGroups, setAvailableGroups] = useState([]);
@@ -53,9 +53,16 @@ export default function NewYardModal({ open, onClose, onYardCreated, yard }) {
     const fetchGroups = async () => {
       try {
         const groups = await getYardGroup();
-        setAvailableGroups(groups);
+        if (Array.isArray(groups)) {
+          setAvailableGroups(groups);
+        } else {
+          setAvailableGroups([]); 
+        }
       } catch (err) {
-        console.error("Failed to load yard groups", err);
+        setError(err.message || "Failed to load yard groups");
+        setGroups([]); 
+      } finally {
+        setLoading(false);
       }
     };
     fetchGroups();
