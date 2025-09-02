@@ -76,6 +76,15 @@ jobs:
       - name: Install deps
         working-directory: frontend
         run: npm ci
+      - name: Hunt for --loader/tsx in repo
+        run: |
+          echo "---- Search for --loader tsx ----"
+          egrep -RIn --line-number --fixed-strings --exclude-dir node_modules --exclude-dir .git -- '--loader tsx' . || true
+          echo "---- Search for NODE_OPTIONS ----"
+          egrep -RIn --line-number --fixed-strings --exclude-dir node_modules --exclude-dir .git -- 'NODE_OPTIONS' . || true
+          echo "---- Search for tsx usage in configs ----"
+          egrep -RIn --line-number --exclude-dir node_modules --exclude-dir .git --include='*.{json,js,ts,mjs,cjs,yml,yaml}' \
+            -e 'tsx' -e 'ts-node/register' -e 'ts-node/esm' -e 'register/transpile-only' . || true
       - name: Run Cypress (Chrome headless)
         working-directory: frontend
         env:
