@@ -66,27 +66,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
-      - name: Debug Node options
-        working-directory: frontend
-        run: |
-          node -v
-          echo "NODE_OPTIONS=$NODE_OPTIONS"
-          node -p "process.execArgv"
+          node-version: '22'
       - name: Install deps
         working-directory: frontend
         run: npm ci
-      - name: Hunt for --loader/tsx in repo
-        run: |
-          echo "---- Search for '--loader tsx' (fixed string) ----"
-          grep -RInF --exclude-dir node_modules --exclude-dir .git -- '--loader tsx' . || true
-      
-          echo "---- Search for NODE_OPTIONS (fixed string) ----"
-          grep -RInF --exclude-dir node_modules --exclude-dir .git -- 'NODE_OPTIONS' . || true
-      
-          echo "---- Search for tsx/ts-node references in configs (regex) ----"
-          grep -RInE --exclude-dir node_modules --exclude-dir .git --include='*.json' --include='*.js' --include='*.ts' --include='*.mjs' --include='*.cjs' --include='*.yml' --include='*.yaml' \
-            '(tsx|ts-node/register|ts-node/esm|register/transpile-only)' . || true
+
       - name: Run Cypress (Chrome headless)
         working-directory: frontend
         env:
