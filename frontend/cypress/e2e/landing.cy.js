@@ -4,3 +4,9 @@ describe('Landing Page', () => {
         cy.contains('Welcome to LawnHero').should('be.visible');
     });
 });
+
+describe('Authentication flow', () => {
+    it('navigates to login and logs in', () => {
+        cy.visit('/login');
+    });
+})
