@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
-import { getYardList, getYardGroup } from "../Api";
+import {
+  getYardList,
+  getYardGroup,
+  removeYard,
+  removeYardGroup,
+  updateYardGroup,
+} from "../Api";
 import Button from "@mui/material/Button";
 import NewYardModal from "../components/NewYardModal";
 import CustomAccordion from "../components/MUIAccordion";
-import { removeYard, removeYardGroup, updateYardGroup } from "../Api";
 import ConfirmModal from "../components/ConfirmModal";
 
 export default function Dashboard() {
@@ -23,6 +28,8 @@ export default function Dashboard() {
   const [editingGroupName, setEditingGroupName] = useState("");
   const [confirmGroupOpen, setConfirmGroupOpen] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
+
+  const [groupToDelete, setGroupToDelete] = useState(null);
 
   const fetchYards = async () => {
     try {
@@ -74,8 +81,26 @@ export default function Dashboard() {
   const handleConfirmDelete = async () => {
     if (!selectedYardId) return;
     try {
+      const yardToDelete = yards.find((y) => y.id === selectedYardId);
+
       await removeYard(selectedYardId);
-      fetchYards();
+      await fetchYards();
+
+      if (yardToDelete?.yard_group) {
+        const stillHasYards = yards.some(
+          (y) =>
+            y.yard_group === yardToDelete.yard_group && y.id !== selectedYardId
+        );
+
+        if (!stillHasYards) {
+          setGroupToDelete({
+            id: yardToDelete.yard_group,
+            name:
+              groups.find((g) => g.id === yardToDelete.yard_group)
+                ?.group_name || "Unnamed Group",
+          });
+        }
+      }
     } catch (err) {
       console.error("Failed to delete yard", err);
       alert("Failed to delete yard.");
@@ -318,6 +343,7 @@ export default function Dashboard() {
         onYardCreated={handleYardCreated}
         yard={editYard}
         groups={groups}
+        yards={yards}
       />
       <ConfirmModal
         open={confirmOpen}
@@ -330,6 +356,19 @@ export default function Dashboard() {
         onClose={() => setConfirmGroupOpen(false)}
         onConfirm={handleConfirmDeleteGroup}
         message="Are you sure you want to delete this group? All yards in this group will be unassigned."
+      />
+      <ConfirmModal
+        open={!!groupToDelete}
+        onClose={() => setGroupToDelete(null)}
+        onConfirm={async () => {
+          if (groupToDelete) {
+            await removeYardGroup(groupToDelete.id);
+            await fetchGroups();
+            setGroupToDelete(null);
+          }
+        }}
+        title="Delete Empty Group?"
+        message={`The yard group "${groupToDelete?.name}" is now empty. Do you want to delete it?`}
       />
     </div>
   );
