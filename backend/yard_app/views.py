@@ -50,7 +50,7 @@ class YardListView(UserPermissions):
         yards = Yard.objects.filter(user=user)
         serializer = YardSerializer(yards, many=True)
         if not yards.exists():
-            return Response({"yards": [], "message": "No yards found for user."}, status=s.HTTP_200_OK)
+            return Response([], status=s.HTTP_200_OK)
         return Response(serializer.data)
 
     # create yard for user
@@ -73,7 +73,7 @@ class YardGroupView(UserPermissions):
         yard_groups = YardGroup.objects.filter(user=user)
         serializer = YardGroupSerializer(yard_groups, many=True)
         if not yard_groups.exists():
-            return Response({"yard_groups": [], "message": "No yard groups found for user."}, status=s.HTTP_200_OK)
+            return Response([], status=s.HTTP_200_OK)
         return Response(serializer.data)
     
     # create a yard group
