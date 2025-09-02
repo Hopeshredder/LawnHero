@@ -67,13 +67,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          
       - name: Install deps
         working-directory: frontend
         run: npm ci
+
+      - name: Build app
+        working-directory: frontend
+        run: npm run build
+  
+      - name: Start preview server (port 5173)
+        working-directory: frontend
+        run: npx vite preview --port 5173 --strictPort &
+        # ^ starts in background
+  
+      - name: Wait for server
+        working-directory: frontend
+        run: npx wait-on http://localhost:5173
 
       - name: Run Cypress (Chrome headless)
         working-directory: frontend
         env:
           NODE_OPTIONS: ""
+          CI: "1"
         run: npx cypress run --browser chrome --headless
 # END DEBUGGING
