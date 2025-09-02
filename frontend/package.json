@@ -4,8 +4,12 @@
   "description": "",
   "main": "eslint.config.js",
   "scripts": {
+    "build": "vite build",
+    "preview": "vite preview --port 5173 --strictPort",
+    "cy:run": "cypress run --browser chrome --headless",
+    "test:e2e": "start-server-and-test preview http://localhost:5173 cy:run",
     "dev": "vite",
-    "test": "node --test"
+    "test": "cypress run"
   },
   "keywords": [],
   "author": "",
@@ -22,10 +26,14 @@
     "react-router-dom": "^7.8.2"
   },
   "devDependencies": {
+    "@types/node": "^24.3.0",
     "@vitejs/plugin-react": "^5.0.1",
     "autoprefixer": "^10.4.21",
+    "cypress": "^15.0.0",
     "postcss": "^8.5.6",
+    "start-server-and-test": "^2.0.13",
     "tailwindcss": "^3.4.17",
+    "typescript": "^5.9.2",
     "vite": "^7.1.3"
   }
 }
