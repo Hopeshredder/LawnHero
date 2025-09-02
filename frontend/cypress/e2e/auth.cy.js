@@ -45,7 +45,7 @@ describe('Authentication Flow', () => {
 });
 
 // Test for Register page
-describe('New User Registration Flow', () => { 
+describe('New User Registration Flow', () => {
     it('navigates to register and makes a new user', () => {
         // Mock auth_me response
         cy.intercept('GET', '**/users/auth/me/', { statusCode: 200, body: { email: null, is_super: false } }).as('initialAuth');
@@ -67,6 +67,8 @@ describe('New User Registration Flow', () => {
 
         // Mock user register request and response 
         cy.intercept('POST', '**/users/signup/', { statusCode: 201, body: { email: 'test@example.com' } }).as('signup');
+        // Mock user login request and response (Signup calls on Login once user is created)
+        cy.intercept('POST', '**/users/login/', { statusCode: 200, body: { email: 'test@example.com' } }).as('login');
         // Mock auth response
         cy.intercept('GET', '**/users/auth/me/', { statusCode: 200, body: { email: 'test@example.com', is_super: false } }).as('authMe');
 
@@ -89,4 +91,4 @@ describe('New User Registration Flow', () => {
         // If register works, it redirects to ToDo page
         cy.url().should('include', '/todo');
     })
- });
+});
