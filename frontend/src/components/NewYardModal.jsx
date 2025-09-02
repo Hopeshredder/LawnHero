@@ -15,15 +15,18 @@ import {
   updateYard,
   createYardGroup,
   addYardToYardGroup,
+  removeYardGroup,
 } from "../Api";
+import ConfirmModal from "../components/ConfirmModal";
 
 export default function NewYardModal({
-  // delete unused groups?
+  // delete unused groups with prompt when yardgroup empty
   open,
   onClose,
   onYardCreated,
   yard,
   groups,
+  yards,
 }) {
   const [yardName, setYardName] = useState(yard?.yard_name || "");
   const [yardSize, setYardSize] = useState(yard?.yard_size || 0);
@@ -34,6 +37,13 @@ export default function NewYardModal({
   const [availableGroups, setAvailableGroups] = useState(groups);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [confirmGroupOpen, setConfirmGroupOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState(null);
+
+  const groupName =
+    availableGroups.find((g) => g.id.toString() === groupToDelete?.toString())
+      ?.group_name || "Unnamed Group";
 
   // Sync modal fields when editing a yard
   useEffect(() => {
@@ -74,6 +84,7 @@ export default function NewYardModal({
     try {
       // Determine the final group ID
       let finalGroupId = yardGroup === "" ? null : yardGroup;
+      const oldGroupId = yard?.yard_group ?? null;
 
       if (newGroupName?.trim()) {
         const newGroup = await createYardGroup(newGroupName.trim());
@@ -103,6 +114,20 @@ export default function NewYardModal({
         await addYardToYardGroup(finalGroupId, savedYard.id);
       }
 
+      if (oldGroupId && oldGroupId.toString() !== finalGroupId?.toString()) {
+        const oldGroupYards = yards.filter(
+          (y) =>
+            y.yard_group?.toString() === oldGroupId.toString() &&
+            y.id !== yard.id
+        );
+
+        if (oldGroupYards.length === 0) {
+          setGroupToDelete(oldGroupId);
+          setConfirmGroupOpen(true);
+          return;
+        }
+      }
+
       if (!yard?.id) {
         // Reset form
         setYardName("");
@@ -122,124 +147,147 @@ export default function NewYardModal({
     }
   };
 
-  return (
-    <Modal open={open} onClose={onClose}>
-      <Box
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: { xs: "90%", sm: 400 },
-          bgcolor: "#f9f0dd",
-          borderRadius: 8,
-          boxShadow: 6,
-          p: { xs: 3, sm: 4 },
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h6" gutterBottom sx={{ mb: 2, color: "#333" }}>
-          {yard?.id ? "Edit Yard" : "Add New Yard"}
-        </Typography>
+  const handleConfirmGroupDelete = async () => {
+    if (!groupToDelete) return;
+    try {
+      await removeYardGroup(groupToDelete);
+      setGroupToDelete(null);
+      onYardCreated();
+      onClose();
+    } catch (err) {
+      setError("Failed to delete group");
+    } finally {
+      setConfirmGroupOpen(false);
+    }
+  };
 
+  return (
+    <>
+      <Modal open={open} onClose={onClose}>
         <Box
           sx={{
-            width: "100%",
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 400 },
+            bgcolor: "#f9f0dd",
+            borderRadius: 8,
+            boxShadow: 6,
+            p: { xs: 3, sm: 4 },
             display: "flex",
             flexDirection: "column",
-            gap: 2,
+            alignItems: "center",
           }}
         >
-          <TextField
-            fullWidth
-            label="Yard Name"
-            value={yardName}
-            onChange={(e) => setYardName(e.target.value)}
-            disabled={loading}
-          />
-          <TextField
-            fullWidth
-            label="Yard Size"
-            type="number"
-            value={yardSize}
-            onChange={(e) => setYardSize(e.target.value)}
-            disabled={loading}
-            inputProps={{ min: 0 }}
-          />
-          <TextField
-            fullWidth
-            label="Soil Type"
-            value={soilType}
-            onChange={(e) => setSoilType(e.target.value)}
-            disabled={loading}
-          />
-          <TextField
-            fullWidth
-            label="Grass Type"
-            value={grassType}
-            onChange={(e) => setGrassType(e.target.value)}
-            disabled={loading}
-          />
-
-          <FormControl fullWidth disabled={loading}>
-            <InputLabel id="yard-group-label">Yard Group</InputLabel>
-            <Select
-              labelId="yard-group-label"
-              value={yardGroup === "" ? "" : yardGroup}
-              onChange={(e) => {
-                setYardGroup(e.target.value);
-                setNewGroupName(""); // clear new group input if selecting existing
-              }}
-            >
-              <MenuItem value="">N/A</MenuItem>
-              {availableGroups.map((group) => (
-                <MenuItem key={group.id} value={group.id.toString()}>
-                  {group.group_name || "Unnamed Group"}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <TextField
-            fullWidth
-            label="Or create new group"
-            value={newGroupName}
-            onChange={(e) => setNewGroupName(e.target.value)}
-            disabled={loading}
-          />
-        </Box>
-
-        {error && (
-          <Typography color="error" sx={{ mt: 2 }}>
-            {error}
+          <Typography variant="h6" gutterBottom sx={{ mb: 2, color: "#333" }}>
+            {yard?.id ? "Edit Yard" : "Add New Yard"}
           </Typography>
-        )}
 
-        <Box
-          mt={3}
-          display="flex"
-          justifyContent="flex-end"
-          gap={2}
-          sx={{ width: "100%" }}
-        >
-          <Button variant="outlined" onClick={onClose} disabled={loading}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
+          <Box
             sx={{
-              backgroundColor: "#a14525",
-              "&:hover": { backgroundColor: "#c65b3b" },
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
             }}
-            onClick={handleSave}
-            disabled={loading}
           >
-            {loading ? "Saving..." : "Save"}
-          </Button>
+            <TextField
+              fullWidth
+              label="Yard Name"
+              value={yardName}
+              onChange={(e) => setYardName(e.target.value)}
+              disabled={loading}
+            />
+            <TextField
+              fullWidth
+              label="Yard Size"
+              type="number"
+              value={yardSize}
+              onChange={(e) => setYardSize(e.target.value)}
+              disabled={loading}
+              inputProps={{ min: 0 }}
+            />
+            <TextField
+              fullWidth
+              label="Soil Type"
+              value={soilType}
+              onChange={(e) => setSoilType(e.target.value)}
+              disabled={loading}
+            />
+            <TextField
+              fullWidth
+              label="Grass Type"
+              value={grassType}
+              onChange={(e) => setGrassType(e.target.value)}
+              disabled={loading}
+            />
+
+            <FormControl fullWidth disabled={loading}>
+              <InputLabel id="yard-group-label">Yard Group</InputLabel>
+              <Select
+                labelId="yard-group-label"
+                value={yardGroup === "" ? "" : yardGroup}
+                onChange={(e) => {
+                  setYardGroup(e.target.value);
+                  setNewGroupName(""); // clear new group input if selecting existing
+                }}
+              >
+                <MenuItem value="">N/A</MenuItem>
+                {availableGroups.map((group) => (
+                  <MenuItem key={group.id} value={group.id.toString()}>
+                    {group.group_name || "Unnamed Group"}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField
+              fullWidth
+              label="Or create new group"
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+              disabled={loading}
+            />
+          </Box>
+
+          {error && (
+            <Typography color="error" sx={{ mt: 2 }}>
+              {error}
+            </Typography>
+          )}
+
+          <Box
+            mt={3}
+            display="flex"
+            justifyContent="flex-end"
+            gap={2}
+            sx={{ width: "100%" }}
+          >
+            <Button variant="outlined" onClick={onClose} disabled={loading}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#a14525",
+                "&:hover": { backgroundColor: "#c65b3b" },
+              }}
+              onClick={handleSave}
+              disabled={loading}
+            >
+              {loading ? "Saving..." : "Save"}
+            </Button>
+          </Box>
         </Box>
-      </Box>
-    </Modal>
+      </Modal>
+
+      <ConfirmModal
+        open={confirmGroupOpen}
+        onClose={() => setConfirmGroupOpen(false)}
+        onConfirm={handleConfirmGroupDelete}
+        message={`The yard group "${groupToDelete?.name}" is now empty. Do you want to delete it?`}
+      />
+    </>
   );
 }
