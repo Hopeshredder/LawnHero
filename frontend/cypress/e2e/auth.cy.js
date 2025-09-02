@@ -44,12 +44,49 @@ describe('Authentication Flow', () => {
     });
 });
 
-// // Test for Register page
-// describe('New User Registration Flow', () => { 
-//     it('navigates to register and makes a new user', () => {
-//         // Mock auth_me response
-//         cy.intercept('')
-//         // mock get_yards response
+// Test for Register page
+describe('New User Registration Flow', () => { 
+    it('navigates to register and makes a new user', () => {
+        // Mock auth_me response
+        cy.intercept('GET', '**/users/auth/me/', { statusCode: 200, body: { email: null, is_super: false } }).as('initialAuth');
+        // mock get_yards response
+        cy.intercept('GET', '**/yards/', { statusCode: 200, body: [] }).as('yardList');
 
-//     })
-//  })
+        // Go to landing page
+        cy.visit('/');
+        // Logic checks if user is logged in to display private/public routes
+        // Uses mock respose set above
+        cy.wait('@initialAuth');
+
+        // Since no user is logged in, we should see the REGISTER button and click it
+        cy.get('nav').contains('Register').click();
+        // Checks if it takes us to the register page
+        cy.url().should('include', '/register');
+        // Makes sure page header is "Register"
+        cy.get("h1").contains('Register').should('be.visible');
+
+        // Mock user register request and response 
+        cy.intercept('POST', '**/users/signup/', { statusCode: 201, body: { email: 'test@example.com' } }).as('signup');
+        // Mock auth response
+        cy.intercept('GET', '**/users/auth/me/', { statusCode: 200, body: { email: 'test@example.com', is_super: false } }).as('authMe');
+
+        // set name input
+        cy.get('input#name').type('Testname');
+        // set email input
+        cy.get('input#email').type('test@example.com');
+        // set password input - not used for testing only to fulfill form requirements
+        cy.get('input#password').type('password');
+
+        cy.get('main').contains('button', 'Register').click();
+
+        // registers a user
+        cy.wait('@signup');
+        // validates user
+        cy.wait('@authMe');
+        // Yards list is requested for the ToDo page
+        cy.wait('@yardList');
+
+        // If register works, it redirects to ToDo page
+        cy.url().should('include', '/todo');
+    })
+ });
