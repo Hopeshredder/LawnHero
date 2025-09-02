@@ -46,6 +46,20 @@ jobs:
         run: |
           pytest
 
+# ORIGINAL TESTS
+  # frontend-tests:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '18'
+  #     - run: npm ci
+  #       working-directory: frontend
+  #     - run: npm test
+  #       working-directory: frontend
+
+# START DEBUGGING
   frontend-tests:
     runs-on: ubuntu-latest
     steps:
@@ -53,7 +67,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - run: npm ci
+      - name: Debug Node options
         working-directory: frontend
-      - run: npm test
+        run: |
+          node -v
+          echo "NODE_OPTIONS=$NODE_OPTIONS"
+          node -p "process.execArgv"
+      - name: Install deps
         working-directory: frontend
+        run: npm ci
+      - name: Run Cypress (Chrome headless)
+        working-directory: frontend
+        env:
+          NODE_OPTIONS: ""
+        run: npx cypress run --browser chrome --headless
+# END DEBUGGING
