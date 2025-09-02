@@ -20,13 +20,15 @@ import {
 import ConfirmModal from "../components/ConfirmModal";
 
 export default function NewYardModal({
-  // delete unused groups with prompt when yardgroup empty
+
   open,
   onClose,
   onYardCreated,
   yard,
   groups,
   yards,
+  setPreferencesOpen, 
+  setSelectedYardId,
 }) {
   const [yardName, setYardName] = useState(yard?.yard_name || "");
   const [yardSize, setYardSize] = useState(yard?.yard_size || 0);
@@ -41,9 +43,11 @@ export default function NewYardModal({
   const [confirmGroupOpen, setConfirmGroupOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState(null);
 
+  const [customizePrefs, setCustomizePrefs] = useState(false);
+
   const groupName =
     availableGroups.find((g) => g.id.toString() === groupToDelete?.toString())
-      ?.group_name || "Unnamed Group";
+      ?.group_name || "Unnamed Group"; // is groupName even needed?
 
   // Sync modal fields when editing a yard
   useEffect(() => {
@@ -138,8 +142,14 @@ export default function NewYardModal({
         setNewGroupName("");
       }
 
-      onYardCreated();
-      onClose();
+      if (customizePrefs) {
+        setSelectedYardId(savedYard.id);
+        onClose();
+        setPreferencesOpen(true);
+      } else {
+        onYardCreated();
+        onClose();
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Failed to save yard.");
     } finally {
@@ -256,7 +266,19 @@ export default function NewYardModal({
               {error}
             </Typography>
           )}
-
+          <div className="mt-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={customizePrefs}
+                onChange={(e) => setCustomizePrefs(e.target.checked)}
+              />
+              <span className="text-sm text-gray-700">
+                Customize yard preferences after creation (otherwise defaults
+                will be applied)
+              </span>
+            </label>
+          </div>
           <Box
             mt={3}
             display="flex"
@@ -276,7 +298,7 @@ export default function NewYardModal({
               onClick={handleSave}
               disabled={loading}
             >
-              {loading ? "Saving..." : "Save"}
+              {loading ? "Saving..." : customizePrefs ? "Next" : "Save"}
             </Button>
           </Box>
         </Box>

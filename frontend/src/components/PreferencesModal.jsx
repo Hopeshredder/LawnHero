@@ -1,0 +1,174 @@
+import { useState, useEffect } from "react";
+import { Modal, Box, Typography, TextField, Button } from "@mui/material";
+import { updatePrefs } from "../Api";
+
+export default function PreferencesModal({
+  open,
+  onClose,
+  yardId,
+  onPreferencesSaved,
+  initialPrefs,
+}) {
+  const [wateringInterval, setWateringInterval] = useState(2.0);
+  const [fertilizingInterval, setFertilizingInterval] = useState(90);
+  const [mowingInterval, setMowingInterval] = useState(7);
+  const [aerationInterval, setAerationInterval] = useState(180);
+  const [dethatchingInterval, setDethatchingInterval] = useState(180);
+  const [wateringRate, setWateringRate] = useState(2.0);
+  const [fertilizingRate, setFertilizingRate] = useState(1.0);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Reset fields when opening
+  useEffect(() => {
+    if (!open) return;
+
+    setWateringInterval(initialPrefs?.watering_interval ?? 2.0);
+    setFertilizingInterval(initialPrefs?.fertilizing_interval ?? 90);
+    setMowingInterval(initialPrefs?.mowing_interval ?? 7);
+    setAerationInterval(initialPrefs?.aeration_interval ?? 180);
+    setDethatchingInterval(initialPrefs?.dethatching_interval ?? 180);
+    setWateringRate(initialPrefs?.watering_rate ?? 2.0);
+    setFertilizingRate(initialPrefs?.fertilizing_rate ?? 1.0);
+
+    setError("");
+  }, [open, initialPrefs]);
+
+  const handleSavePreferences = async () => {
+    if (!yardId) return;
+    setLoading(true);
+    setError("");
+
+    try {
+      await updatePrefs(yardId, {
+        watering_interval: wateringInterval,
+        fertilizing_interval: fertilizingInterval,
+        mowing_interval: mowingInterval,
+        aeration_interval: aerationInterval,
+        dethatching_interval: dethatchingInterval,
+        watering_rate: wateringRate,
+        fertilizing_rate: fertilizingRate,
+      });
+      onPreferencesSaved?.();
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to save preferences.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!open) return null;
+
+  return (
+    <Modal open={open} onClose={onClose}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: { xs: "90%", sm: 500 },
+          bgcolor: "#f9f0dd",
+          borderRadius: 4,
+          boxShadow: 6,
+          p: { xs: 3, sm: 4 },
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        <Typography variant="h6" color="#333" gutterBottom>
+          Yard Preferences
+        </Typography>
+
+        {error && <Typography color="error">{error}</Typography>}
+
+        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+          <TextField
+            label="Watering Interval (days)"
+            type="number"
+            value={wateringInterval}
+            onChange={(e) => setWateringInterval(parseFloat(e.target.value))}
+            fullWidth
+            disabled={loading}
+          />
+          <TextField
+            label="Fertilizing Interval (days)"
+            type="number"
+            value={fertilizingInterval}
+            onChange={(e) =>
+              setFertilizingInterval(parseInt(e.target.value, 10))
+            }
+            fullWidth
+            disabled={loading}
+          />
+          <TextField
+            label="Mowing Interval (days)"
+            type="number"
+            value={mowingInterval}
+            onChange={(e) => setMowingInterval(parseInt(e.target.value, 10))}
+            fullWidth
+            disabled={loading}
+          />
+          <TextField
+            label="Aeration Interval (days)"
+            type="number"
+            value={aerationInterval}
+            onChange={(e) => setAerationInterval(parseInt(e.target.value, 10))}
+            fullWidth
+            disabled={loading}
+          />
+          <TextField
+            label="Dethatching Interval (days)"
+            type="number"
+            value={dethatchingInterval}
+            onChange={(e) =>
+              setDethatchingInterval(parseInt(e.target.value, 10))
+            }
+            fullWidth
+            disabled={loading}
+          />
+          <TextField
+            label="Watering Rate (in/week)"
+            type="number"
+            step="0.1"
+            value={wateringRate}
+            onChange={(e) => setWateringRate(parseFloat(e.target.value))}
+            fullWidth
+            disabled={loading}
+          />
+          <TextField
+            label="Fertilizing Rate (lbs/1000sqft)"
+            type="number"
+            step="0.1"
+            value={fertilizingRate}
+            onChange={(e) => setFertilizingRate(parseFloat(e.target.value))}
+            fullWidth
+            disabled={loading}
+          />
+        </Box>
+
+        <Box
+          sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 3 }}
+        >
+          <Button variant="outlined" onClick={onClose} disabled={loading}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: "#a14525",
+              "&:hover": { backgroundColor: "#c65b3b" },
+            }}
+            onClick={handleSavePreferences}
+            disabled={loading}
+          >
+            {loading ? "Saving..." : "Save Preferences"}
+          </Button>
+        </Box>
+      </Box>
+    </Modal>
+  );
+}
