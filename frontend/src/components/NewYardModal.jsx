@@ -14,11 +14,11 @@ import {
   createYard,
   updateYard,
   createYardGroup,
-  getYardGroup,
   addYardToYardGroup,
 } from "../Api";
 
 export default function NewYardModal({
+  // delete unused groups?
   open,
   onClose,
   onYardCreated,
@@ -29,7 +29,7 @@ export default function NewYardModal({
   const [yardSize, setYardSize] = useState(yard?.yard_size || 0);
   const [soilType, setSoilType] = useState(yard?.soil_type || "Unknown");
   const [grassType, setGrassType] = useState(yard?.grass_type || "Unknown"); // add fields for zip or address, convert to lat lon for backend
-  const [yardGroup, setYardGroup] = useState(yard?.yard_group?.id || "");
+  const [yardGroup, setYardGroup] = useState(yard?.yard_group ?? "");
   const [newGroupName, setNewGroupName] = useState("");
   const [availableGroups, setAvailableGroups] = useState(groups);
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ export default function NewYardModal({
       setYardSize(yard.yard_size);
       setSoilType(yard.soil_type);
       setGrassType(yard.grass_type);
-      setYardGroup(yard.yard_group?.id || "");
+      setYardGroup(yard?.yard_group ?? "");
       setNewGroupName("");
     } else {
       setYardName("");
@@ -73,32 +73,29 @@ export default function NewYardModal({
 
     try {
       // Determine the final group ID
-      let finalGroupId = yardGroup;
+      let finalGroupId = yardGroup === "" ? null : yardGroup;
 
       if (newGroupName?.trim()) {
         const newGroup = await createYardGroup(newGroupName.trim());
         finalGroupId = newGroup.id;
         setAvailableGroups((prev) => [...prev, newGroup]); // add new group to dropdown
+        setYardGroup(newGroup.id);
       }
+
+      const payload = {
+        yard_name: yardName,
+        yard_size: Number(yardSize),
+        soil_type: soilType || "Unknown",
+        grass_type: grassType || "Unknown",
+        yard_group: finalGroupId,
+      };
 
       // Save or update yard
       let savedYard;
       if (yard?.id) {
-        savedYard = await updateYard(yard.id, {
-          yard_name: yardName,
-          yard_size: Number(yardSize),
-          soil_type: soilType || "Unknown",
-          grass_type: grassType || "Unknown",
-          yard_group: finalGroupId || null,
-        });
+        savedYard = await updateYard(yard.id, payload);
       } else {
-        savedYard = await createYard({
-          yard_name: yardName,
-          yard_size: Number(yardSize),
-          soil_type: soilType || "Unknown",
-          grass_type: grassType || "Unknown",
-          yard_group: finalGroupId || null,
-        });
+        savedYard = await createYard(payload);
       }
 
       // Ensure yard is added to the selected group
@@ -106,13 +103,15 @@ export default function NewYardModal({
         await addYardToYardGroup(finalGroupId, savedYard.id);
       }
 
-      // Reset form
-      setYardName("");
-      setYardSize(0);
-      setSoilType("Unknown");
-      setGrassType("Unknown");
-      setYardGroup("");
-      setNewGroupName("");
+      if (!yard?.id) {
+        // Reset form
+        setYardName("");
+        setYardSize(0);
+        setSoilType("Unknown");
+        setGrassType("Unknown");
+        setYardGroup("");
+        setNewGroupName("");
+      }
 
       onYardCreated();
       onClose();
@@ -188,7 +187,7 @@ export default function NewYardModal({
             <InputLabel id="yard-group-label">Yard Group</InputLabel>
             <Select
               labelId="yard-group-label"
-              value={yardGroup?.toString() || ""}
+              value={yardGroup === "" ? "" : yardGroup}
               onChange={(e) => {
                 setYardGroup(e.target.value);
                 setNewGroupName(""); // clear new group input if selecting existing
