@@ -61,11 +61,11 @@ export default function Settings() {
               </div>
             ) : userInfo ? (
               <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b">
+                <div className="flex justify-between items-center py-2 border-b" id='emailDiv'>
                   <span className="font-medium text-gray-700">Email:</span>
                   <span className="text-gray-900">{userInfo.email}</span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b">
+                <div className="flex justify-between items-center py-2 border-b" id='accountTypeDiv'>
                   <span className="font-medium text-gray-700">
                     Account Type:
                   </span>

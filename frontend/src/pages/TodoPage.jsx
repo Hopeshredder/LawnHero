@@ -71,6 +71,7 @@ export default function Todo() {
 
                 return (
                   <div
+                    id="pastTasks"
                     key={t.id}
                     className={`relative p-2 border rounded mb-1 shadow-sm flex items-center gap-2 ${
                       isOverdue ? "bg-red-300" : "var(--color-medium)"
@@ -149,7 +150,7 @@ export default function Todo() {
 
               {/* only show in-between button if there are tasks */}
               {tasks.length > 0 && (
-                <div className="my-2">
+                <div id="addTasks" className="my-2">
                   <Button
                     onClick={() => {
                       setActiveYard(yard.id);
@@ -174,6 +175,7 @@ export default function Todo() {
 
               {todayAndFuture.map((t) => (
                 <div
+                  id="futureTasks"
                   key={t.id}
                   className="relative p-2 border rounded mb-1 shadow-sm flex items-center gap-2"
                   style={{ backgroundColor: "var(--color-lightest)" }}

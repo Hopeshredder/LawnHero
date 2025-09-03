@@ -5,8 +5,3 @@ describe('Landing Page', () => {
     });
 });
 
-describe('Authentication flow', () => {
-    it('navigates to login and logs in', () => {
-        cy.visit('/login');
-    });
-})

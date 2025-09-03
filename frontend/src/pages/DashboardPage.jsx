@@ -5,7 +5,6 @@ import {
   removeYard,
   removeYardGroup,
   updateYardGroup,
-  getPrefs,
 } from "../Api";
 import Button from "@mui/material/Button";
 import EditIcon from '@mui/icons-material/Edit';
@@ -13,7 +12,6 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import NewYardModal from "../components/NewYardModal";
 import CustomAccordion from "../components/MUIAccordion";
 import ConfirmModal from "../components/ConfirmModal";
-import PreferencesModal from "../components/PreferencesModal";
 
 export default function Dashboard() {
   // pencil and trash also on todo page, get rid of toggle, make excessively long yard names stay anchored left and ... on right
@@ -35,11 +33,6 @@ export default function Dashboard() {
   const [selectedGroupId, setSelectedGroupId] = useState(null);
 
   const [groupToDelete, setGroupToDelete] = useState(null);
-
-  //const [customizePrefs, setCustomizePrefs] = useState(false);
-  const [preferencesOpen, setPreferencesOpen] = useState(false);
-
-  const [prefsByYard, setPrefsByYard] = useState({});
 
   const fetchYards = async () => {
     try {
@@ -66,23 +59,6 @@ export default function Dashboard() {
     fetchYards();
     fetchGroups();
   }, []);
-
-  useEffect(() => {
-    const fetchAllPrefs = async () => {
-      const newPrefs = {};
-      for (const yard of yards) {
-        try {
-          const res = await getPrefs(yard.id);
-          if (res.ok) newPrefs[yard.id] = res.data;
-        } catch (err) {
-          console.error(`Failed to fetch prefs for yard ${yard.id}`, err);
-        }
-      }
-      setPrefsByYard(newPrefs);
-    };
-
-    if (yards.length) fetchAllPrefs();
-  }, [yards]);
 
   const fetchGroups = async () => {
     try {
@@ -561,17 +537,7 @@ export default function Dashboard() {
         yard={editYard}
         groups={groups}
         yards={yards}
-        setPreferencesOpen={setPreferencesOpen}
-        setSelectedYardId={setSelectedYardId}
       />
-      <PreferencesModal
-        open={preferencesOpen}
-        onClose={() => setPreferencesOpen(false)}
-        yardId={selectedYardId}
-        onPreferencesSaved={handleYardCreated}
-        initialPrefs={prefsByYard[selectedYardId]}
-      />
-
       <ConfirmModal
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
