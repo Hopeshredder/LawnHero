@@ -20,14 +20,13 @@ import {
 import ConfirmModal from "../components/ConfirmModal";
 
 export default function NewYardModal({
-
   open,
   onClose,
   onYardCreated,
   yard,
   groups,
   yards,
-  setPreferencesOpen, 
+  setPreferencesOpen,
   setSelectedYardId,
 }) {
   const [yardName, setYardName] = useState(yard?.yard_name || "");
@@ -208,6 +207,9 @@ export default function NewYardModal({
               value={yardName}
               onChange={(e) => setYardName(e.target.value)}
               disabled={loading}
+              multiline
+              minRows={1}
+              maxRows={4}
             />
             <TextField
               fullWidth
@@ -224,6 +226,9 @@ export default function NewYardModal({
               value={soilType}
               onChange={(e) => setSoilType(e.target.value)}
               disabled={loading}
+              multiline
+              minRows={1}
+              maxRows={3}
             />
             <TextField
               fullWidth
@@ -231,8 +236,10 @@ export default function NewYardModal({
               value={grassType}
               onChange={(e) => setGrassType(e.target.value)}
               disabled={loading}
+              multiline
+              minRows={1}
+              maxRows={3}
             />
-
             <FormControl fullWidth disabled={loading}>
               <InputLabel id="yard-group-label">Yard Group</InputLabel>
               <Select

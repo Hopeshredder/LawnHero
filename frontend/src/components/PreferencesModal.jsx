@@ -93,6 +93,31 @@ export default function PreferencesModal({
             onChange={(e) => setWateringInterval(parseFloat(e.target.value))}
             fullWidth
             disabled={loading}
+            InputLabelProps={{
+              sx: {
+                whiteSpace: "normal",
+                overflow: "visible",
+                textOverflow: "clip",
+                lineHeight: "1.2em",
+              },
+            }}
+          />
+          <TextField
+            label="Watering Rate (in/week)"
+            type="number"
+            step="0.1"
+            value={wateringRate}
+            onChange={(e) => setWateringRate(parseFloat(e.target.value))}
+            fullWidth
+            disabled={loading}
+            InputLabelProps={{
+              sx: {
+                whiteSpace: "normal",
+                overflow: "visible",
+                textOverflow: "clip",
+                lineHeight: "1.2em",
+              },
+            }}
           />
           <TextField
             label="Fertilizing Interval (days)"
@@ -103,6 +128,31 @@ export default function PreferencesModal({
             }
             fullWidth
             disabled={loading}
+            InputLabelProps={{
+              sx: {
+                whiteSpace: "normal",
+                overflow: "visible",
+                textOverflow: "clip",
+                lineHeight: "1.2em",
+              },
+            }}
+          />
+          <TextField
+            label="Fertilizing Rate (lbs/1000sqft)"
+            type="number"
+            step="0.1"
+            value={fertilizingRate}
+            onChange={(e) => setFertilizingRate(parseFloat(e.target.value))}
+            fullWidth
+            disabled={loading}
+            InputLabelProps={{
+              sx: {
+                whiteSpace: "normal",
+                overflow: "visible",
+                textOverflow: "clip",
+                lineHeight: "1.2em",
+              },
+            }}
           />
           <TextField
             label="Mowing Interval (days)"
@@ -111,6 +161,14 @@ export default function PreferencesModal({
             onChange={(e) => setMowingInterval(parseInt(e.target.value, 10))}
             fullWidth
             disabled={loading}
+            InputLabelProps={{
+              sx: {
+                whiteSpace: "normal",
+                overflow: "visible",
+                textOverflow: "clip",
+                lineHeight: "1.2em",
+              },
+            }}
           />
           <TextField
             label="Aeration Interval (days)"
@@ -119,6 +177,14 @@ export default function PreferencesModal({
             onChange={(e) => setAerationInterval(parseInt(e.target.value, 10))}
             fullWidth
             disabled={loading}
+            InputLabelProps={{
+              sx: {
+                whiteSpace: "normal",
+                overflow: "visible",
+                textOverflow: "clip",
+                lineHeight: "1.2em",
+              },
+            }}
           />
           <TextField
             label="Dethatching Interval (days)"
@@ -129,24 +195,14 @@ export default function PreferencesModal({
             }
             fullWidth
             disabled={loading}
-          />
-          <TextField
-            label="Watering Rate (in/week)"
-            type="number"
-            step="0.1"
-            value={wateringRate}
-            onChange={(e) => setWateringRate(parseFloat(e.target.value))}
-            fullWidth
-            disabled={loading}
-          />
-          <TextField
-            label="Fertilizing Rate (lbs/1000sqft)"
-            type="number"
-            step="0.1"
-            value={fertilizingRate}
-            onChange={(e) => setFertilizingRate(parseFloat(e.target.value))}
-            fullWidth
-            disabled={loading}
+            InputLabelProps={{
+              sx: {
+                whiteSpace: "normal",
+                overflow: "visible",
+                textOverflow: "clip",
+                lineHeight: "1.2em",
+              },
+            }}
           />
         </Box>
 

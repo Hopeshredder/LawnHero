@@ -8,12 +8,15 @@ import {
   getPrefs,
 } from "../Api";
 import Button from "@mui/material/Button";
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import NewYardModal from "../components/NewYardModal";
 import CustomAccordion from "../components/MUIAccordion";
 import ConfirmModal from "../components/ConfirmModal";
 import PreferencesModal from "../components/PreferencesModal";
 
 export default function Dashboard() {
+  // pencil and trash also on todo page, get rid of toggle, make excessively long yard names stay anchored left and ... on right
   const [yards, setYards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -180,12 +183,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="px-4 sm:px-8 md:px-16 lg:px-24 flex flex-col items-center justify-start min-h-screen">
-      <h1>Yards</h1>
+    <div className="px-4 sm:px-8 md:px-16 lg:px-24 flex flex-col justify-start min-h-screen w-full">
+      <h1 className="text-2xl font-bold mb-2 text-center">Yard Groups</h1>
 
       {loading && <p>Loading yards...</p>}
       {error && <p className="text-red-500">{error}</p>}
-      <div className="border border-gray-300 rounded-lg p-4 w-full flex flex-col items-center justify-center">
+      <div className="rounded-lg pt-4 w-full flex flex-col items-center justify-center space-y-4">
         {/* Groups with yards */}
         {groups.map((group) => {
           const groupYards = yards.filter(
@@ -196,6 +199,7 @@ export default function Dashboard() {
 
           return (
             <CustomAccordion
+              className="w-full"
               key={group.id}
               title={
                 editingGroupId === group.id ? (
@@ -227,23 +231,23 @@ export default function Dashboard() {
                 )
               }
               content={
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {groupYards.map((yard) => (
                     <CustomAccordion
                       key={yard.id}
                       title={yard.yard_name}
                       content={
                         <>
-                          <div>
-                            <strong>Size:</strong> {yard.yard_size}
+                          <div className="flex justify-between">
+                            <strong>Size:</strong> {yard.yard_size} sqft
                           </div>
-                          <div>
+                          <div className="flex justify-between">
                             <strong>Soil:</strong> {yard.soil_type}
                           </div>
-                          <div>
+                          <div className="flex justify-between">
                             <strong>Grass:</strong> {yard.grass_type}
                           </div>
-                          <div>
+                          <div className="flex justify-between">
                             <strong>Group:</strong>{" "}
                             {yard.yard_group
                               ? groups.find((g) => g.id === yard.yard_group)
@@ -252,57 +256,111 @@ export default function Dashboard() {
                           </div>
                           {/* Preferences */}
                           {prefsByYard[yard.id] && (
-                            <div className="mt-2 border-t pt-2 space-y-1">
-                              <div>
-                                <strong>Watering Interval:</strong>{" "}
-                                {prefsByYard[yard.id].watering_interval} days
-                              </div>
-                              <div>
-                                <strong>Watering Rate:</strong>{" "}
-                                {prefsByYard[yard.id].watering_rate} in/week
-                              </div>
-                              <div>
-                                <strong>Mowing Interval:</strong>{" "}
-                                {prefsByYard[yard.id].mowing_interval} days
-                              </div>
-                              <div>
-                                <strong>Fertilizing Interval:</strong>{" "}
-                                {prefsByYard[yard.id].fertilizing_interval} days
-                              </div>
-                              <div>
-                                <strong>Fertilizing Rate:</strong>{" "}
-                                {prefsByYard[yard.id].fertilizing_rate}{" "}
-                                lbs/1000sqft
-                              </div>
-                              <div>
-                                <strong>Aeration Interval:</strong>{" "}
-                                {prefsByYard[yard.id].aeration_interval} days
-                              </div>
-                              <div>
-                                <strong>Dethatching Interval:</strong>{" "}
-                                {prefsByYard[yard.id].dethatching_interval} days
-                              </div>
-                            </div>
+                            <CustomAccordion
+                              title="Preferences"
+                              noBorder={true}
+                              noShadow={true}
+                              className="w-full mt-2" // make sure accordion itself is full width
+                              content={
+                                <div className="mt-2 space-y-1 w-full">
+                                  {" "}
+                                  {/* add w-full here */}
+                                  {/* Water */}
+                                  <div className="grid gap-0 text-center border-b-[1px] border-b-[var(--color-medium)] pb-2 w-full">
+                                    <div>
+                                      <strong>Water</strong>
+                                    </div>
+                                    <div className="grid grid-cols-2 w-full">
+                                      <div>Every</div>
+                                      <div>Amount</div>
+                                    </div>
+                                    <div className="grid grid-cols-2 w-full">
+                                      <div>
+                                        {prefsByYard[yard.id].watering_interval}{" "}
+                                        day(s)
+                                      </div>
+                                      <div>
+                                        {prefsByYard[yard.id].watering_rate}" /
+                                        week
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {/* Fertilize */}
+                                  <div className="grid gap-0 text-center border-b-[1px] border-b-[var(--color-medium)] pb-2 w-full">
+                                    <div>
+                                      <strong>Fertilize</strong>
+                                    </div>
+                                    <div className="grid grid-cols-2 w-full">
+                                      <div>Every</div>
+                                      <div>Amount</div>
+                                    </div>
+                                    <div className="grid grid-cols-2 w-full">
+                                      <div>
+                                        {
+                                          prefsByYard[yard.id]
+                                            .fertilizing_interval
+                                        }{" "}
+                                        day(s)
+                                      </div>
+                                      <div>
+                                        {prefsByYard[yard.id].fertilizing_rate}{" "}
+                                        lbs/1000 sqft
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {/* Mow / Aerate / Dethatch */}
+                                  <div className="grid gap-0 text-center pb-2 w-full">
+                                    <div className="grid grid-cols-3 divide-x-[1px] divide-[var(--color-medium)] w-full">
+                                      <strong>Mow</strong>
+                                      <strong>Aerate</strong>
+                                      <strong>Dethatch</strong>
+                                    </div>
+                                    <div className="grid grid-cols-3 divide-x-[1px] divide-[var(--color-medium)] w-full">
+                                      <div>Every</div>
+                                      <div>Every</div>
+                                      <div>Every</div>
+                                    </div>
+                                    <div className="grid grid-cols-3 divide-x-[1px] divide-[var(--color-medium)] w-full">
+                                      <div>
+                                        {prefsByYard[yard.id].mowing_interval}{" "}
+                                        day(s)
+                                      </div>
+                                      <div>
+                                        {prefsByYard[yard.id].aeration_interval}{" "}
+                                        day(s)
+                                      </div>
+                                      <div>
+                                        {
+                                          prefsByYard[yard.id]
+                                            .dethatching_interval
+                                        }{" "}
+                                        day(s)
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              }
+                            />
                           )}
                         </>
                       }
                       actions={
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={() => setEditYard(yard)}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            size="small"
-                            onClick={() => handleDeleteClick(yard.id)}
-                          >
-                            Delete
-                          </Button>
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="flex gap-2">
+                            <EditIcon
+                              variant="outlined"
+                              size="small"
+                              onClick={() => setEditYard(yard)}
+                            >
+                            </EditIcon>
+                            <DeleteForeverIcon
+                              variant="outlined"
+                              color="error"
+                              size="small"
+                              onClick={() => handleDeleteClick(yard.id)}
+                            >
+                            </DeleteForeverIcon>
+                          </div>
                         </div>
                       }
                     />
@@ -310,22 +368,23 @@ export default function Dashboard() {
                 </div>
               }
               actions={
-                <div className="flex gap-2">
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => handleEditGroup(group)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    size="small"
-                    onClick={() => handleDeleteGroupClick(group.id)}
-                  >
-                    Delete
-                  </Button>
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex gap-2">
+                    <EditIcon
+                      variant="outlined"
+                      size="small"
+                      onClick={() => handleEditGroup(group)}
+                    >
+                    </EditIcon>
+
+                    <DeleteForeverIcon
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      onClick={() => handleDeleteGroupClick(group.id)}
+                    >
+                    </DeleteForeverIcon>
+                  </div>
                 </div>
               }
             />
@@ -338,7 +397,7 @@ export default function Dashboard() {
             key="ungrouped"
             title="Ungrouped Yards"
             content={
-              <div className="space-y-2">
+              <div className="space-y-2 w-full">
                 {yards
                   .filter((yard) => !yard.yard_group)
                   .map((yard) => (
@@ -347,16 +406,16 @@ export default function Dashboard() {
                       title={yard.yard_name}
                       content={
                         <>
-                          <div>
-                            <strong>Size:</strong> {yard.yard_size}
+                          <div className="flex justify-between">
+                            <strong>Size:</strong> {yard.yard_size} sqft
                           </div>
-                          <div>
+                          <div className="flex justify-between">
                             <strong>Soil:</strong> {yard.soil_type}
                           </div>
-                          <div>
+                          <div className="flex justify-between">
                             <strong>Grass:</strong> {yard.grass_type}
                           </div>
-                          <div>
+                          <div className="flex justify-between">
                             <strong>Group:</strong>{" "}
                             {yard.yard_group
                               ? groups.find((g) => g.id === yard.yard_group)
@@ -365,57 +424,111 @@ export default function Dashboard() {
                           </div>
                           {/* Preferences */}
                           {prefsByYard[yard.id] && (
-                            <div className="mt-2 border-t pt-2 space-y-1">
-                              <div>
-                                <strong>Watering Interval:</strong>{" "}
-                                {prefsByYard[yard.id].watering_interval} days
-                              </div>
-                              <div>
-                                <strong>Watering Rate:</strong>{" "}
-                                {prefsByYard[yard.id].watering_rate} in/week
-                              </div>
-                              <div>
-                                <strong>Mowing Interval:</strong>{" "}
-                                {prefsByYard[yard.id].mowing_interval} days
-                              </div>
-                              <div>
-                                <strong>Fertilizing Interval:</strong>{" "}
-                                {prefsByYard[yard.id].fertilizing_interval} days
-                              </div>
-                              <div>
-                                <strong>Fertilizing Rate:</strong>{" "}
-                                {prefsByYard[yard.id].fertilizing_rate}{" "}
-                                lbs/1000sqft
-                              </div>
-                              <div>
-                                <strong>Aeration Interval:</strong>{" "}
-                                {prefsByYard[yard.id].aeration_interval} days
-                              </div>
-                              <div>
-                                <strong>Dethatching Interval:</strong>{" "}
-                                {prefsByYard[yard.id].dethatching_interval} days
-                              </div>
-                            </div>
+                            <CustomAccordion
+                              title="Preferences"
+                              noBorder={true}
+                              noShadow={true}
+                              className="w-full mt-2" // make sure accordion itself is full width
+                              content={
+                                <div className="mt-2 space-y-1 w-full">
+                                  {" "}
+                                  {/* add w-full here */}
+                                  {/* Water */}
+                                  <div className="grid gap-0 text-center border-b-[1px] border-b-[var(--color-medium)] pb-2 w-full">
+                                    <div>
+                                      <strong>Water</strong>
+                                    </div>
+                                    <div className="grid grid-cols-2 w-full">
+                                      <div>Every</div>
+                                      <div>Amount</div>
+                                    </div>
+                                    <div className="grid grid-cols-2 w-full">
+                                      <div>
+                                        {prefsByYard[yard.id].watering_interval}{" "}
+                                        day(s)
+                                      </div>
+                                      <div>
+                                        {prefsByYard[yard.id].watering_rate}" /
+                                        week
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {/* Fertilize */}
+                                  <div className="grid gap-0 text-center border-b-[1px] border-b-[var(--color-medium)] pb-2 w-full">
+                                    <div>
+                                      <strong>Fertilize</strong>
+                                    </div>
+                                    <div className="grid grid-cols-2 w-full">
+                                      <div>Every</div>
+                                      <div>Amount</div>
+                                    </div>
+                                    <div className="grid grid-cols-2 w-full">
+                                      <div>
+                                        {
+                                          prefsByYard[yard.id]
+                                            .fertilizing_interval
+                                        }{" "}
+                                        day(s)
+                                      </div>
+                                      <div>
+                                        {prefsByYard[yard.id].fertilizing_rate}{" "}
+                                        lbs/1000 sqft
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {/* Mow / Aerate / Dethatch */}
+                                  <div className="grid gap-0 text-center pb-2 w-full">
+                                    <div className="grid grid-cols-3 divide-x-[1px] divide-[var(--color-medium)] w-full">
+                                      <strong>Mow</strong>
+                                      <strong>Aerate</strong>
+                                      <strong>Dethatch</strong>
+                                    </div>
+                                    <div className="grid grid-cols-3 divide-x-[1px] divide-[var(--color-medium)] w-full">
+                                      <div>Every</div>
+                                      <div>Every</div>
+                                      <div>Every</div>
+                                    </div>
+                                    <div className="grid grid-cols-3 divide-x-[1px] divide-[var(--color-medium)] w-full">
+                                      <div>
+                                        {prefsByYard[yard.id].mowing_interval}{" "}
+                                        day(s)
+                                      </div>
+                                      <div>
+                                        {prefsByYard[yard.id].aeration_interval}{" "}
+                                        day(s)
+                                      </div>
+                                      <div>
+                                        {
+                                          prefsByYard[yard.id]
+                                            .dethatching_interval
+                                        }{" "}
+                                        day(s)
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              }
+                            />
                           )}
                         </>
                       }
                       actions={
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={() => setEditYard(yard)}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            size="small"
-                            onClick={() => handleDeleteClick(yard.id)}
-                          >
-                            Delete
-                          </Button>
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="flex gap-2">
+                            <EditIcon
+                              variant="outlined"
+                              size="small"
+                              onClick={() => setEditYard(yard)}
+                            >
+                            </EditIcon>
+                            <DeleteForeverIcon
+                              variant="outlined"
+                              color="error"
+                              size="small"
+                              onClick={() => handleDeleteClick(yard.id)}
+                            >
+                            </DeleteForeverIcon>
+                          </div>
                         </div>
                       }
                     />
