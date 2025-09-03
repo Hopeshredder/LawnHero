@@ -44,7 +44,6 @@ describe('Authentication Flow', () => {
     });
 });
 
-// Test for Register page
 describe('New User Registration Flow', () => {
     it('navigates to register and makes a new user', () => {
         // Mock auth_me response
@@ -94,13 +93,12 @@ describe('New User Registration Flow', () => {
 });
 
 
-// TO-DO: Test for redirect to Login if accessing a private route
 describe("Redirect on attempt to reach a private route if not logged in", () => {
     it("Attempts to access the /todo page without signing in", () => {
         // set authMe response
-        cy.intercept("GET", "**/users/auth/me/", {statusCode: 200, body: {email: null, is_super: false}}).as("initialAuth");
+        cy.intercept("GET", "**/users/auth/me/", { statusCode: 200, body: { email: null, is_super: false } }).as("initialAuth");
         // set yards response
-        cy.intercept("GET", "**/yards/", {statusCode: 200, body: []}).as('yardList')
+        cy.intercept("GET", "**/yards/", { statusCode: 200, body: [] }).as('yardList')
 
         // attempt to visit unauthorized route
         cy.visit("/todo")
@@ -110,7 +108,27 @@ describe("Redirect on attempt to reach a private route if not logged in", () => 
 
         // check for redirect to login page
         cy.url().should('include', '/login')
-        
+
 
     })
 })
+
+// TODO: Public route protection when signed in
+describe("Redirect on attempt to reach a public route if logged in", () => {
+    it("Attempts to access the /login page when logged in", () => {
+        // set authMe response
+        cy.intercept("GET", "**/users/auth/me", { statusCode: 200, body: { email: "testuser@test.com", is_super: false } }).as("initialAuth")
+        // set yards response
+        cy.intercept("GET", "**/yards/", { statusCode: 200, body: [] }).as('yardList')
+
+        // attempt to visit login page 
+        cy.visit("/login")
+
+        cy.wait("@initialAuth")
+
+        // check for redirect to dashboard
+        cy.url().should("include", "/todo")
+    })
+})
+
+// TODO: Logout flow (from settings page)
