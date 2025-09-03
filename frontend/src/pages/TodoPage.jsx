@@ -4,13 +4,14 @@ import CustomAccordion from "../components/MUIAccordion";
 import Button from "@mui/material/Button";
 import TaskModal from "../components/TaskModal";
 import ConfirmModal from "../components/ConfirmModal";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
 export default function Todo() {
   const [yards, setYards] = useState([]);
   const [tasksByYard, setTasksByYard] = useState({});
   const [openModal, setOpenModal] = useState(false);
   const [activeYard, setActiveYard] = useState(null);
-  const [showTaskActions, setShowTaskActions] = useState(false);
   const [activeTask, setActiveTask] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
@@ -49,14 +50,6 @@ export default function Todo() {
   return (
     <div className="flex flex-col items-center px-4 sm:px-8 md:px-16 lg:px-24">
       <h1 className="text-2xl font-bold mb-2 text-center">To-Do List</h1>
-      <Button
-        variant="contained"
-        color="secondary"
-        onClick={() => setShowTaskActions((prev) => !prev)}
-        className="mb-4"
-      >
-        {showTaskActions ? "Hide Task Actions" : "Show Task Actions"}
-      </Button>
       <div className="flex flex-col gap-4 w-full max-w-2xl mt-4">
         {yards.map((yard) => {
           const tasks = tasksByYard[yard.id] || [];
@@ -77,6 +70,7 @@ export default function Todo() {
                       isOverdue ? "bg-red-300" : "var(--color-medium)"
                     }`}
                   >
+                    {/* Checkbox */}
                     <input
                       type="checkbox"
                       checked={!!t.day_completed}
@@ -110,40 +104,32 @@ export default function Todo() {
                         }
                       }}
                       className="w-5 h-5"
-                      style={{
-                        accentColor: "var(--color-medium)",
-                      }}
+                      style={{ accentColor: "var(--color-medium)" }}
                     />
 
-                    <div className="flex w-full justify-between items-center ml-2">
-                      <span className="text-left">{t.activity_type}</span>
-                      <span className="text-right">
+                    {/* Activity + Date */}
+                    <div className="flex-1 flex items-center justify-between ml-2">
+                      <span className="truncate">{t.activity_type}</span>
+                      <span className="ml-2 flex-shrink-0">
                         {t.day_scheduled.split("-").slice(1).join("/")}
                       </span>
                     </div>
 
-                    {showTaskActions && (
-                      <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
-                        <Button
-                          variant="contained"
-                          size="small"
-                          onClick={() => handleEditTask(t)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="error"
-                          size="small"
-                          onClick={() => {
-                            setTaskToDelete(t);
-                            setConfirmOpen(true);
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    )}
+                    {/* Edit/Delete icons */}
+                    <div className="flex gap-2 ml-2 flex-shrink-0">
+                      <EditIcon
+                        fontSize="small"
+                        onClick={() => handleEditTask(t)}
+                      />
+                      <DeleteForeverIcon
+                        fontSize="small"
+                        color="error"
+                        onClick={() => {
+                          setTaskToDelete(t);
+                          setConfirmOpen(true);
+                        }}
+                      />
+                    </div>
                   </div>
                 );
               })}
@@ -173,82 +159,77 @@ export default function Todo() {
                 </div>
               )}
 
-              {todayAndFuture.map((t) => (
-                <div
-                  id="futureTasks"
-                  key={t.id}
-                  className="relative p-2 border rounded mb-1 shadow-sm flex items-center gap-2"
-                  style={{ backgroundColor: "var(--color-lightest)" }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={!!t.day_completed}
-                    onChange={async (e) => {
-                      const completed = e.target.checked
-                        ? new Date().toISOString().split("T")[0]
-                        : null;
+              {todayAndFuture.map((t) => {
+                return (
+                  <div
+                    id="futureTasks"
+                    key={t.id}
+                    className="p-2 border rounded mb-1 shadow-sm flex items-center gap-2"
+                    style={{ backgroundColor: "var(--color-lightest)" }}
+                  >
+                    {/* Checkbox */}
+                    <input
+                      type="checkbox"
+                      checked={!!t.day_completed}
+                      onChange={async (e) => {
+                        const completed = e.target.checked
+                          ? new Date().toISOString().split("T")[0]
+                          : null;
 
-                      setTasksByYard((prev) => ({
-                        ...prev,
-                        [yard.id]: prev[yard.id].map((task) =>
-                          task.id === t.id
-                            ? { ...task, day_completed: completed }
-                            : task
-                        ),
-                      }));
-
-                      try {
-                        await updateTask(t.id, { day_completed: completed });
-                      } catch (err) {
-                        console.error("Failed to update task:", err);
                         setTasksByYard((prev) => ({
                           ...prev,
                           [yard.id]: prev[yard.id].map((task) =>
                             task.id === t.id
-                              ? { ...task, day_completed: t.day_completed }
+                              ? { ...task, day_completed: completed }
                               : task
                           ),
                         }));
-                        alert("Failed to update task completion");
-                      }
-                    }}
-                    className="w-5 h-5"
-                    style={{
-                      accentColor: "var(--color-medium)",
-                    }}
-                  />
 
-                  <div className="flex w-full justify-between items-center">
-                    <span className="text-left">{t.activity_type}</span>
-                    <span className="text-right">
-                      {t.day_scheduled.split("-").slice(1).join("/")}
-                    </span>
-                  </div>
+                        try {
+                          await updateTask(t.id, { day_completed: completed });
+                        } catch (err) {
+                          console.error("Failed to update task:", err);
+                          setTasksByYard((prev) => ({
+                            ...prev,
+                            [yard.id]: prev[yard.id].map((task) =>
+                              task.id === t.id
+                                ? { ...task, day_completed: t.day_completed }
+                                : task
+                            ),
+                          }));
+                          alert("Failed to update task completion");
+                        }
+                      }}
+                      className="w-5 h-5"
+                      style={{ accentColor: "var(--color-medium)" }}
+                    />
 
-                  {showTaskActions && (
-                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
-                      <Button
-                        variant="contained"
-                        size="small"
+                    {/* Activity + Date */}
+                    <div className="flex-1 flex items-center justify-between ml-2">
+                      <span className="truncate">{t.activity_type}</span>
+                      <span className="ml-2 flex-shrink-0">
+                        {t.day_scheduled.split("-").slice(1).join("/")}
+                      </span>
+                    </div>
+
+                    {/* Edit/Delete icons */}
+                    <div className="flex gap-2 ml-2 flex-shrink-0">
+                      <EditIcon
+                        fontSize="small"
                         onClick={() => handleEditTask(t)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="contained"
+                      />
+                      <DeleteForeverIcon
+                        fontSize="small"
                         color="error"
-                        size="small"
                         onClick={() => {
                           setTaskToDelete(t);
                           setConfirmOpen(true);
                         }}
-                      >
-                        Delete
-                      </Button>
+                      />
                     </div>
-                  )}
-                </div>
-              ))}
+                  </div>
+                );
+              })}
 
               {/* empty yard fallback */}
               {tasks.length === 0 && (
