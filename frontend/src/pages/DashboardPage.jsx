@@ -54,8 +54,8 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
+// 
+  useEffect(() => { 
     fetchYards();
     fetchGroups();
   }, []);
