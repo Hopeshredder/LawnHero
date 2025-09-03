@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import { logoutUser, getUserInfo } from "../Api";
 import { useState, useEffect } from "react";
-import { useAuth } from "../contexts/AuthContext";
 
 export default function Settings() {
   const [error, setError] = useState("");
@@ -10,7 +9,6 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  const { logout } = useAuth();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -36,7 +34,7 @@ export default function Settings() {
   const handleLogout = async () => {
     setError("");
     try {
-      await logout();
+      await logoutUser();
       navigate("/");
     } catch (err) {
       setError(
@@ -61,11 +59,11 @@ export default function Settings() {
               </div>
             ) : userInfo ? (
               <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b">
+                <div className="flex justify-between items-center py-2 border-b" id='emailDiv'>
                   <span className="font-medium text-gray-700">Email:</span>
                   <span className="text-gray-900">{userInfo.email}</span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b">
+                <div className="flex justify-between items-center py-2 border-b" id='accountTypeDiv'>
                   <span className="font-medium text-gray-700">
                     Account Type:
                   </span>
