@@ -16,7 +16,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import PreferencesModal from "../components/PreferencesModal";
 
 export default function Dashboard() {
-  // pencil and trash also on todo page, get rid of toggle, make excessively long yard names stay anchored left and ... on right
+  // make excessively long yard names stay anchored left and ... on right
   const [yards, setYards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
