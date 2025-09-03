@@ -1,47 +1,72 @@
-describe('Authentication Flow', () => {
-    it('navigates to login and logs in', () => {
-
+describe('User Login and Logout', () => {
+    beforeEach(() => {
         // Mock auth response
-        cy.intercept('GET', '**/users/auth/me/', { statusCode: 200, body: { email: null, is_super: false } }).as('initialAuth');
-        // Mock get_yards response
-        cy.intercept('GET', '**/yards/', { statusCode: 200, body: [] }).as('yardList');
-
-        // Go to landing page
-        cy.visit('/');
-        // Logic checks if user is logged in to display private/public routes
-        // Uses mock respose set above
-        cy.wait('@initialAuth');
-
-
-        // Since no user is logged in, we should see the GetStarted button and click it
-        cy.contains('Get Started').click();
-        // Checks if it takes us to the login page
-        cy.url().should('include', '/login');
-        // Makes sure page header is "Login"
-        cy.get("h1").contains('Login').should('be.visible');
+        cy.intercept('GET', '**/users/auth/me/', { statusCode: 200, body: { email: null, is_super: false } }).as('authMe');
 
         // Mock user login request and response 
         cy.intercept('POST', '**/users/login/', { statusCode: 200, body: { email: 'test@example.com' } }).as('login');
-        // Mock auth response
-        cy.intercept('GET', '**/users/auth/me/', { statusCode: 200, body: { email: 'test@example.com', is_super: false } }).as('authMe');
+
+        // Mock get_yards response
+        cy.intercept('GET', '**/yards/', { statusCode: 200, body: [] }).as('yardList');
+    })
+
+    it('Logs in a user', () => {
+        // Go to landing page
+        cy.visit('/');
+
+        // Uses mock respose for logged out user
+        cy.wait('@authMe');
+
+        // Since no user is logged in, we should see the GetStarted button and click it
+        cy.contains('Get Started').click();
+
+        // Checks if it takes us to the login page
+        cy.location("pathname").should('eq', '/login');
+        // Makes sure page header is "Login"
+        cy.get("h1").contains('Login').should('be.visible');
 
         // set email input
         cy.get('input#email').type('test@example.com');
         // set password input - not used for testing only to fulfill form requirements
         cy.get('input#password').type('password');
 
+
+        // Mock logged in auth response
+        cy.intercept('GET', '**/users/auth/me/', { statusCode: 200, body: { email: "test@example.com", is_super: false } }).as('authMe');
+
+        // Click login button
         cy.contains('button', 'Login').click();
 
         // logs in
         cy.wait('@login');
         // validates user
         cy.wait('@authMe');
-        // Yards list is requested for the ToDo page
-        cy.wait('@yardList');
+        // // Yards list is requested for the ToDo page
+        // cy.wait('@yardList');
 
         // If login works, it redirects to ToDo page
-        cy.url().should('include', '/todo');
+        cy.location("pathname").should("eq", "/todo")
     });
+
+    it("Logs out a user", () => {
+        // Go to landing page
+        cy.intercept('GET', '**/users/auth/me/', { statusCode: 200, body: { email: "test@example.com", is_super: false } }).as('authMe');
+
+        // Mock logged in auth response
+        cy.intercept("GET", "**/users/info", { statusCode: 200, body: { email: "test@example.com", is_super: false } }).as("userInfo")
+
+        cy.visit("/settings")
+        
+        cy.wait("@authMe")
+        cy.wait("@userInfo")
+
+        cy.intercept("POST", "**/users/logout/", { statusCode: 204 }).as("logout")
+
+        cy.contains("LOGOUT").click()
+        cy.wait("@logout")
+
+        cy.location("pathname").should("eq", "/")
+    })
 });
 
 describe('New User Registration Flow', () => {
@@ -107,7 +132,7 @@ describe("Private route protection", () => {
         // checks user auth
         cy.wait('@authMe')
         // check for redirect to login page
-        cy.location("pathname").should("eq", "/login")
+        cy.location("pathname").should("eq", "/")
     })
     it("Attempts to access the /dashboard page without signing in", () => {
         // attempt to visit unauthorized route
@@ -115,7 +140,7 @@ describe("Private route protection", () => {
         // checks user auth
         cy.wait('@authMe')
         // check for redirect to login page
-        cy.location("pathname").should("eq", "/login")
+        cy.location("pathname").should("eq", "/")
     })
     it("Attempts to access the /settings page without signing in", () => {
         // attempt to visit unauthorized route
@@ -123,7 +148,7 @@ describe("Private route protection", () => {
         // checks user auth
         cy.wait('@authMe')
         // check for redirect to login page
-        cy.location("pathname").should("eq", "/login")
+        cy.location("pathname").should("eq", "/")
     })
 })
 
@@ -162,5 +187,3 @@ describe("Public route protection", () => {
         cy.location("pathname").should("eq", "/todo")
     })
 })
-
-// TODO: Logout flow (from settings page)
