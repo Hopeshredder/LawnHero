@@ -93,41 +93,73 @@ describe('New User Registration Flow', () => {
 });
 
 
-describe("Redirect on attempt to reach a private route if not logged in", () => {
+describe("Private route protection", () => {
+    beforeEach(() => {
+        //Mock auth as not logged in
+        cy.intercept(
+            { method: "GET", url: "**/users/auth/me" },
+            { statusCode: 200, body: { email: null, is_super: false } }
+        ).as("authMe")
+    })
     it("Attempts to access the /todo page without signing in", () => {
-        // set authMe response
-        cy.intercept("GET", "**/users/auth/me/", { statusCode: 200, body: { email: null, is_super: false } }).as("initialAuth");
-        // set yards response
-        cy.intercept("GET", "**/yards/", { statusCode: 200, body: [] }).as('yardList')
-
         // attempt to visit unauthorized route
         cy.visit("/todo")
-
         // checks user auth
-        cy.wait('@initialAuth')
-
+        cy.wait('@authMe')
         // check for redirect to login page
-        cy.url().should('include', '/login')
-
-
+        cy.location("pathname").should("eq", "/login")
+    })
+    it("Attempts to access the /dashboard page without signing in", () => {
+        // attempt to visit unauthorized route
+        cy.visit("/dashboard")
+        // checks user auth
+        cy.wait('@authMe')
+        // check for redirect to login page
+        cy.location("pathname").should("eq", "/login")
+    })
+    it("Attempts to access the /settings page without signing in", () => {
+        // attempt to visit unauthorized route
+        cy.visit("/settings")
+        // checks user auth
+        cy.wait('@authMe')
+        // check for redirect to login page
+        cy.location("pathname").should("eq", "/login")
     })
 })
 
-// TODO: Public route protection when signed in
-describe("Redirect on attempt to reach a public route if logged in", () => {
-    it("Attempts to access the /login page when logged in", () => {
-        // set authMe response
-        cy.intercept("GET", "**/users/auth/me", { statusCode: 200, body: { email: "testuser@test.com", is_super: false } }).as("initialAuth")
-        // set yards response
-        cy.intercept("GET", "**/yards/", { statusCode: 200, body: [] }).as('yardList')
+describe("Public route protection", () => {
+    beforeEach(() => {
+        // Mock auth as logged-in
+        cy.intercept(
+            { method: "GET", url: "**/users/auth/me" },
+            { statusCode: 200, body: { email: "testuser@test.com", is_super: false } }
+        ).as("authMe");
 
+        // Mock initial data the app fetches on load
+        cy.intercept(
+            { method: "GET", url: "**/yards/" },
+            { statusCode: 200, body: [] }
+        ).as("yards");
+    });
+
+    it("redirects from /login to /todo when already logged in", () => {
         // attempt to visit login page 
         cy.visit("/login")
 
-        cy.wait("@initialAuth")
+        cy.wait("@authMe").its("response.statusCode").should("eq", 200);
+        cy.wait("@yards").its("response.statusCode").should("eq", 200);
 
-        // check for redirect to dashboard
-        cy.url().should("include", "/todo")
+        // Assert if the redirect completed
+        cy.location("pathname").should("eq", "/todo")
+    })
+    it("redirects from /register to /todo when already logged in", () => {
+        cy.visit("/register")
+
+        cy.wait("@authMe").its("response.statusCode").should("eq", 200);
+        cy.wait("@yards").its("response.statusCode").should("eq", 200);
+
+        // Assert if the redirect completed
+        cy.location("pathname").should("eq", "/todo")
     })
 })
 
