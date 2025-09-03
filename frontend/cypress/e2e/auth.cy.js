@@ -49,7 +49,6 @@ describe('User Login and Logout', () => {
     });
 
     it("Logs out a user", () => {
-        // Go to landing page
         cy.intercept('GET', '**/users/auth/me/', { statusCode: 200, body: { email: "test@example.com", is_super: false } }).as('authMe');
 
         // Mock logged in auth response
