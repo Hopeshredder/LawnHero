@@ -3,16 +3,28 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import { useState } from "react";
 
-export default function CustomAccordion({ title, content, actions, onChange }) {
+export default function CustomAccordion({
+  title,
+  content,
+  actions,
+  onChange,
+  noBorder,
+  noShadow,
+}) {
+  const [expanded, setExpanded] = useState(false);
   return (
     <Accordion
       className="w-full"
-      onChange={onChange}
+      onChange={(_, isExpanded) => {
+        setExpanded(isExpanded);
+        if (onChange) onChange(_, isExpanded);
+      }}
       sx={{
         borderRadius: "1rem !important",
-        boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-        border: "1px solid #e0e0e0",
+        boxShadow: noShadow ? "none" : "0 4px 8px rgba(0,0,0,0.1)",
+        border: noBorder ? "none" : "1px solid #e0e0e0",
         backgroundColor: "var(--color-light)",
         "&:before": { display: "none" },
       }}
@@ -23,16 +35,32 @@ export default function CustomAccordion({ title, content, actions, onChange }) {
         id="panel-header"
         sx={{
           backgroundColor: "var(--color-accent)",
+          minHeight: 56,
+          "&.Mui-expanded": {
+            minHeight: 56,
+          },
+          "& .MuiAccordionSummary-content": {
+            margin: 0,
+            "&.Mui-expanded": {
+              margin: 0,
+            },
+          },
           "& .MuiTypography-root": {
             fontWeight: 600,
-            color: "white",
+            color: "var(--color-dark)",
           },
         }}
       >
-        {typeof title === "string" ? (
-          <Typography component="span">{title}</Typography>
-        ) : (
-          title // render JSX (like <input>) directly
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {typeof title === "string" ? (
+            <Typography component="span">{title}</Typography>
+          ) : (
+            title
+          )}
+        </div>
+
+        {expanded && actions && (
+          <div className="flex items-center gap-2 ml-auto mr-2">{actions}</div>
         )}
       </AccordionSummary>
 
@@ -48,10 +76,7 @@ export default function CustomAccordion({ title, content, actions, onChange }) {
           },
         }}
       >
-        <div className="flex flex-col gap-2">
-          {content}
-          {actions && <div className="mt-2">{actions}</div>}
-        </div>
+        <div className="flex flex-col gap-2">{content}</div>
       </AccordionDetails>
     </Accordion>
   );
