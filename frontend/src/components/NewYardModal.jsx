@@ -42,9 +42,7 @@ export default function NewYardModal({
   const [confirmGroupOpen, setConfirmGroupOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState(null);
 
-  const groupName =
-    availableGroups.find((g) => g.id.toString() === groupToDelete?.toString())
-      ?.group_name || "Unnamed Group";
+  const [customizePrefs, setCustomizePrefs] = useState(false);
 
   // Sync modal fields when editing a yard
   useEffect(() => {
@@ -139,8 +137,14 @@ export default function NewYardModal({
         setNewGroupName("");
       }
 
-      onYardCreated();
-      onClose();
+      if (customizePrefs) {
+        setSelectedYardId(savedYard.id);
+        onClose();
+        setPreferencesOpen(true);
+      } else {
+        onYardCreated();
+        onClose();
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Failed to save yard.");
     } finally {
@@ -266,6 +270,19 @@ export default function NewYardModal({
             </Typography>
           )}
 
+          <div className="mt-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={customizePrefs}
+                onChange={(e) => setCustomizePrefs(e.target.checked)}
+              />
+              <span className="text-sm text-gray-700">
+                Customize yard preferences after creation (otherwise defaults
+                will be applied)
+              </span>
+            </label>
+          </div>
           <Box
             mt={3}
             display="flex"
@@ -285,7 +302,7 @@ export default function NewYardModal({
               onClick={handleSave}
               disabled={loading}
             >
-              {loading ? "Saving..." : "Save"}
+              {loading ? "Saving..." : customizePrefs ? "Next" : "Save"}
             </Button>
           </Box>
         </Box>
