@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import { logoutUser, getUserInfo } from "../Api";
 import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Settings() {
   const [error, setError] = useState("");
@@ -9,6 +10,7 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -34,7 +36,7 @@ export default function Settings() {
   const handleLogout = async () => {
     setError("");
     try {
-      await logoutUser();
+      await logout();
       navigate("/");
     } catch (err) {
       setError(
