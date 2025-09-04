@@ -18,6 +18,7 @@ import {
   removeYardGroup,
 } from "../Api";
 import ConfirmModal from "../components/ConfirmModal";
+import MapMyYard from "./MapMyYard";
 
 export default function NewYardModal({
   open,
@@ -32,7 +33,10 @@ export default function NewYardModal({
   const [yardName, setYardName] = useState(yard?.yard_name || "");
   const [yardSize, setYardSize] = useState(yard?.yard_size || 0);
   const [soilType, setSoilType] = useState(yard?.soil_type || "Unknown");
-  const [grassType, setGrassType] = useState(yard?.grass_type || "Unknown"); // add fields for zip or address, convert to lat lon for backend
+  const [grassType, setGrassType] = useState(yard?.grass_type || "Unknown");
+  const [zipCode, setzipCode] = useState(yard?.zip_code || "");
+  const [latitude, setLatitude] = useState(yard?.latitude || "");
+  const [longitude, setLongitude] = useState(yard?.longitude || "");
   const [yardGroup, setYardGroup] = useState(yard?.yard_group ?? "");
   const [newGroupName, setNewGroupName] = useState("");
   const [availableGroups, setAvailableGroups] = useState(groups);
@@ -44,6 +48,8 @@ export default function NewYardModal({
 
   const [customizePrefs, setCustomizePrefs] = useState(false);
 
+  const [mapOpen, setMapOpen] = useState(false);
+
   // Sync modal fields when editing a yard
   useEffect(() => {
     if (yard) {
@@ -51,13 +57,26 @@ export default function NewYardModal({
       setYardSize(yard.yard_size);
       setSoilType(yard.soil_type);
       setGrassType(yard.grass_type);
+      setzipCode(yard.zip_code);
       setYardGroup(yard?.yard_group ?? "");
       setNewGroupName("");
+      if (yard.zip_code && (!yard.latitude || !yard.longitude)) {
+        fetchLatLonFromZip(yard.zip_code)
+          .then(({ latitude, longitude }) => {
+            setLatitude(latitude);
+            setLongitude(longitude);
+          })
+          .catch((err) => console.error("Failed to get lat/lon:", err));
+      } else {
+        setLatitude(yard.latitude);
+        setLongitude(yard.longitude);
+      }
     } else {
       setYardName("");
       setYardSize(0);
       setSoilType("Unknown");
       setGrassType("Unknown");
+      setzipCode("");
       setYardGroup("");
       setNewGroupName("");
     }
@@ -74,6 +93,11 @@ export default function NewYardModal({
     }
     if (Number(yardSize) < 0) {
       setError("Yard size must be 0 or greater.");
+      return;
+    }
+
+    if (!/^\d{5}$/.test(zipCode)) {
+      setError("Zip code must be exactly 5 digits.");
       return;
     }
 
@@ -97,6 +121,9 @@ export default function NewYardModal({
         yard_size: Number(yardSize),
         soil_type: soilType || "Unknown",
         grass_type: grassType || "Unknown",
+        zip_code: zipCode || "",
+        latitude: latitude,
+        longitude: longitude,
         yard_group: finalGroupId,
       };
 
@@ -133,6 +160,7 @@ export default function NewYardModal({
         setYardSize(0);
         setSoilType("Unknown");
         setGrassType("Unknown");
+        setzipCode("Unknown");
         setYardGroup("");
         setNewGroupName("");
       }
@@ -149,6 +177,37 @@ export default function NewYardModal({
       setError(err.response?.data?.message || "Failed to save yard.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  async function fetchLatLonFromZip(zipCode) {
+    const res = await fetch(`https://api.zippopotam.us/us/${zipCode}`);
+    if (!res.ok) {
+      throw new Error("Could not fetch coordinates for ZIP");
+    }
+    const data = await res.json();
+    const place = data.places?.[0];
+    return {
+      latitude: parseFloat(place.latitude),
+      longitude: parseFloat(place.longitude),
+    };
+  }
+
+  const handleZipChange = async (e) => {
+    const val = e.target.value;
+    if (/^\d{0,5}$/.test(val)) {
+      setzipCode(val);
+
+      // Only fetch when 5 digits are entered
+      if (val.length === 5) {
+        try {
+          const coords = await fetchLatLonFromZip(val);
+          setLatitude(coords.latitude);
+          setLongitude(coords.longitude);
+        } catch (err) {
+          console.error("Failed to resolve ZIP code:", err);
+        }
+      }
     }
   };
 
@@ -209,7 +268,26 @@ export default function NewYardModal({
             />
             <TextField
               fullWidth
-              label="Yard Size"
+              label="Zip Code"
+              value={zipCode}
+              onChange={handleZipChange}
+              disabled={loading}
+              inputProps={{ maxLength: 5 }}
+            />
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#a14525",
+                "&:hover": { backgroundColor: "#c65b3b" },
+              }}
+              onClick={() => setMapOpen(true)}
+              disabled={loading}
+            >
+              Map My Yard
+            </Button>
+            <TextField
+              fullWidth
+              label="Yard Size (sqft)"
               type="number"
               value={yardSize}
               onChange={(e) => setYardSize(e.target.value)}
@@ -303,6 +381,45 @@ export default function NewYardModal({
               disabled={loading}
             >
               {loading ? "Saving..." : customizePrefs ? "Next" : "Save"}
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+      <Modal open={mapOpen} onClose={() => setMapOpen(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "90%",
+            height: "80%",
+            bgcolor: "white",
+            p: 2,
+            display: "flex",
+            flexDirection: "column", // stack map and button vertically
+          }}
+        >
+          <Box sx={{ flex: 1 }}>
+            <MapMyYard
+              latitude={latitude}
+              longitude={longitude}
+              onPolygonComplete={({ latLngs, area }) => {
+                setYardSize(Math.round(area * 10.7639)); // sqm → sqft
+              }}
+            />
+          </Box>
+
+          <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#a14525",
+                "&:hover": { backgroundColor: "#c65b3b" },
+              }}
+              onClick={() => setMapOpen(false)}
+            >
+              Finish
             </Button>
           </Box>
         </Box>
