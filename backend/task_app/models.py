@@ -9,3 +9,5 @@ class Task(models.Model):
     day_scheduled = models.DateField(default=datetime.date.today)
     day_completed = models.DateField(null=True, blank=True) 
     yard = models.ForeignKey(Yard, on_delete=models.CASCADE, related_name='tasks')
+    # DELETE ME
+    testfield = models.CharField(max_length=100, default="d")
