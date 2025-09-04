@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { useState } from "react";
 
-export default function CustomAccordion({
+export default function CustomAccordion({ // make text wrap one time then ...
   title,
   content,
   actions,
