@@ -7,7 +7,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
-export default function Todo() {
+export default function Todo() { // flip order of tasks (past on bottom, future on top.), reorder render of overdue to always be on top. limit past tasks to 5 completed/overdue. move new task creation button to top of content. Buttons need id
   const [yards, setYards] = useState([]);
   const [tasksByYard, setTasksByYard] = useState({});
   const [openModal, setOpenModal] = useState(false);
