@@ -63,9 +63,10 @@ export default function NewTaskModal({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>{task ? "Edit Task" : "New Task"}</DialogTitle>
+      <DialogTitle id="newTaskTitle">{task ? "Edit Task" : "New Task"}</DialogTitle>
       <DialogContent className="flex flex-col gap-4 mt-2">
         <TextField
+          id="activityType"
           label="Activity Type"
           value={activityType}
           onChange={(e) => setActivityType(e.target.value)}
@@ -73,6 +74,7 @@ export default function NewTaskModal({
           fullWidth
         />
         <TextField
+          id="scheduledDate"
           label="Scheduled Date"
           type="date"
           InputLabelProps={{ shrink: true }}
@@ -82,6 +84,7 @@ export default function NewTaskModal({
           fullWidth
         />
         <TextField
+          id="completedDate"
           label="Completed Date (optional)"
           type="date"
           InputLabelProps={{ shrink: true }}
@@ -95,6 +98,7 @@ export default function NewTaskModal({
           Cancel
         </Button>
         <Button
+          id="saveButton"
           onClick={handleSubmit}
           variant="contained"
           color="primary"
