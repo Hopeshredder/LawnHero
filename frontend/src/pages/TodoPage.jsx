@@ -66,9 +66,8 @@ export default function Todo() { // flip order of tasks (past on bottom, future 
                   <div
                     id="pastTasks"
                     key={t.id}
-                    className={`relative p-2 border rounded mb-1 shadow-sm flex items-center gap-2 ${
-                      isOverdue ? "bg-red-300" : "var(--color-medium)"
-                    }`}
+                    className={`relative p-2 border rounded mb-1 shadow-sm flex items-center gap-2 ${isOverdue ? "bg-red-300" : "var(--color-medium)"
+                      }`}
                   >
                     {/* Checkbox */}
                     <input
@@ -134,8 +133,7 @@ export default function Todo() { // flip order of tasks (past on bottom, future 
                 );
               })}
 
-              {/* only show in-between button if there are tasks */}
-              {tasks.length > 0 && (
+              {tasks.length >= 0 && (
                 <div id="addTasks" className="my-2">
                   <Button
                     onClick={() => {
@@ -231,30 +229,6 @@ export default function Todo() { // flip order of tasks (past on bottom, future 
                 );
               })}
 
-              {/* empty yard fallback */}
-              {tasks.length === 0 && (
-                <div className="my-2">
-                  <Button
-                    onClick={() => {
-                      setActiveYard(yard.id);
-                      setOpenModal(true);
-                    }}
-                    className="w-full" // make button full width
-                  >
-                    <div className="flex w-full justify-between items-center">
-                      <span className="text-left">+ New Task</span>
-                      <span className="text-center">—</span>
-                      <span className="text-right">
-                        Today{" "}
-                        {new Date().toLocaleDateString("en-US", {
-                          month: "numeric",
-                          day: "numeric",
-                        })}
-                      </span>
-                    </div>
-                  </Button>
-                </div>
-              )}
             </div>
           );
 
