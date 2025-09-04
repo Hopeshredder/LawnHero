@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getYardList, getTaskForYard, updateTask, deleteTask } from "../Api";
 import CustomAccordion from "../components/MUIAccordion";
 import Button from "@mui/material/Button";
@@ -6,8 +6,9 @@ import TaskModal from "../components/TaskModal";
 import ConfirmModal from "../components/ConfirmModal";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
-export default function Todo() { // flip order of tasks (past on bottom, future on top.), reorder render of overdue to always be on top. limit past tasks to 5 completed/overdue. move new task creation button to top of content. Buttons need id
+export default function Todo() {
   const [yards, setYards] = useState([]);
   const [tasksByYard, setTasksByYard] = useState({});
   const [openModal, setOpenModal] = useState(false);
@@ -15,6 +16,9 @@ export default function Todo() { // flip order of tasks (past on bottom, future 
   const [activeTask, setActiveTask] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
+
+  const [pastLimitByYard, setPastLimitByYard] = useState({});
+  const [futureLimitByYard, setFutureLimitByYard] = useState({});
 
   useEffect(() => {
     const fetchYards = async () => {
@@ -32,7 +36,7 @@ export default function Todo() { // flip order of tasks (past on bottom, future 
     try {
       const res = await getTaskForYard(yardId);
       const sorted = [...res].sort(
-        (a, b) => new Date(a.day_scheduled) - new Date(b.day_scheduled)
+        (a, b) => new Date(b.day_scheduled) - new Date(a.day_scheduled)
       );
       setTasksByYard((prev) => ({ ...prev, [yardId]: sorted }));
     } catch (err) {
@@ -54,85 +58,39 @@ export default function Todo() { // flip order of tasks (past on bottom, future 
         {yards.map((yard) => {
           const tasks = tasksByYard[yard.id] || [];
 
-          const past = tasks.filter((t) => t.day_scheduled < today);
-          const todayAndFuture = tasks.filter((t) => t.day_scheduled >= today);
+          const limit = pastLimitByYard[yard.id] ?? 5;
+
+          const past = (() => {
+            const allPast = tasks.filter((t) => t.day_scheduled < today);
+
+            // split overdue vs completed
+            const overdue = allPast
+              .filter((t) => !t.day_completed)
+              .sort(
+                (a, b) => new Date(b.day_scheduled) - new Date(a.day_scheduled)
+              ); // DESC
+
+            const completed = allPast
+              .filter((t) => t.day_completed)
+              .sort(
+                (a, b) => new Date(b.day_scheduled) - new Date(a.day_scheduled)
+              ); // DESC
+
+            // combine, limit to 10
+            return [...overdue, ...completed].slice(0, limit);
+          })();
+
+          const futureLimit = futureLimitByYard[yard.id] ?? 5;
+
+          const todayAndFuture = tasks
+            .filter((t) => t.day_scheduled >= today)
+            .sort(
+              (a, b) => new Date(a.day_scheduled) - new Date(b.day_scheduled)
+            ) // soonest first
+            .slice(0, futureLimit);
 
           const content = (
             <div>
-              {past.map((t) => {
-                const isOverdue = !t.day_completed && t.day_scheduled < today;
-
-                return (
-                  <div
-                    id="pastTasks"
-                    key={t.id}
-                    className={`relative p-2 border rounded mb-1 shadow-sm flex items-center gap-2 ${isOverdue ? "bg-red-300" : "var(--color-medium)"
-                      }`}
-                  >
-                    {/* Checkbox */}
-                    <input
-                      type="checkbox"
-                      checked={!!t.day_completed}
-                      onChange={async (e) => {
-                        const completed = e.target.checked
-                          ? new Date().toISOString().split("T")[0]
-                          : null;
-
-                        setTasksByYard((prev) => ({
-                          ...prev,
-                          [yard.id]: prev[yard.id].map((task) =>
-                            task.id === t.id
-                              ? { ...task, day_completed: completed }
-                              : task
-                          ),
-                        }));
-
-                        try {
-                          await updateTask(t.id, { day_completed: completed });
-                        } catch (err) {
-                          console.error("Failed to update task:", err);
-                          setTasksByYard((prev) => ({
-                            ...prev,
-                            [yard.id]: prev[yard.id].map((task) =>
-                              task.id === t.id
-                                ? { ...task, day_completed: t.day_completed }
-                                : task
-                            ),
-                          }));
-                          alert("Failed to update task completion");
-                        }
-                      }}
-                      className="w-5 h-5"
-                      style={{ accentColor: "var(--color-medium)" }}
-                    />
-
-                    {/* Activity + Date */}
-                    <div className="flex-1 flex items-center justify-between ml-2">
-                      <span className="truncate">{t.activity_type}</span>
-                      <span className="ml-2 flex-shrink-0">
-                        {t.day_scheduled.split("-").slice(1).join("/")}
-                      </span>
-                    </div>
-
-                    {/* Edit/Delete icons */}
-                    <div className="flex gap-2 ml-2 flex-shrink-0">
-                      <EditIcon
-                        fontSize="small"
-                        onClick={() => handleEditTask(t)}
-                      />
-                      <DeleteForeverIcon
-                        fontSize="small"
-                        color="error"
-                        onClick={() => {
-                          setTaskToDelete(t);
-                          setConfirmOpen(true);
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-
               {tasks.length >= 0 && (
                 <div id="addTasks" className="my-2">
                   <Button
@@ -143,21 +101,37 @@ export default function Todo() { // flip order of tasks (past on bottom, future 
                     className="w-full" // make button full width
                   >
                     <div className="flex w-full justify-between items-center">
-                      <span className="text-left">+ New Task</span>
-                      <span className="text-center">—</span>
+                      <span className="text-left">
+                        <AddCircleOutlineIcon />
+                        New Task
+                      </span>
+                      {/* <span className="text-center">—</span>
                       <span className="text-right">
                         Today{" "}
                         {new Date().toLocaleDateString("en-US", {
                           month: "numeric",
                           day: "numeric",
                         })}
-                      </span>
+                      </span> */}
                     </div>
                   </Button>
+                  {tasks.filter((t) => t.day_scheduled >= today).length >
+                    todayAndFuture.length && (
+                    <Button
+                      onClick={() =>
+                        setFutureLimitByYard((prev) => ({
+                          ...prev,
+                          [yard.id]: (prev[yard.id] ?? 5) + 5,
+                        }))
+                      }
+                      className="mt-2 w-full"
+                    >
+                      Show next 5 future tasks
+                    </Button>
+                  )}
                 </div>
               )}
-
-              {todayAndFuture.map((t) => {
+              {[...todayAndFuture].reverse().map((t) => {
                 return (
                   <div
                     id="futureTasks"
@@ -229,6 +203,117 @@ export default function Todo() { // flip order of tasks (past on bottom, future 
                 );
               })}
 
+              {/* Today Header */}
+              <div
+                className="p-2 mb-1 flex items-center gap-2 border rounded shadow-sm"
+                style={{ backgroundColor: "var(--color-medium)" }}
+              >
+                {/* Left: label */}
+                <div className="flex-1 flex items-center justify-between ml-2">
+                  <span className="truncate font-semibold">Today</span>
+                  <span className="ml-2 flex-shrink-0">
+                    {new Date().toLocaleDateString("en-US", {
+                      month: "2-digit",
+                      day: "2-digit",
+                    })}
+                  </span>
+                </div>
+
+                {/* Placeholder for icons to keep date aligned */}
+                <div className="flex items-center ml-2 flex-shrink-0">
+                  <EditIcon style={{ visibility: "hidden" }} />
+                  <DeleteForeverIcon style={{ visibility: "hidden" }} />
+                </div>
+              </div>
+
+              {past.map((t) => {
+                const isOverdue = !t.day_completed && t.day_scheduled < today;
+
+                return (
+                  <div
+                    id="pastTasks"
+                    key={t.id}
+                    className={`relative p-2 border rounded mb-1 shadow-sm flex items-center gap-2 ${
+                      isOverdue ? "bg-red-300" : "var(--color-medium)"
+                    }`}
+                  >
+                    {/* Checkbox */}
+                    <input
+                      type="checkbox"
+                      checked={!!t.day_completed}
+                      onChange={async (e) => {
+                        const completed = e.target.checked
+                          ? new Date().toISOString().split("T")[0]
+                          : null;
+
+                        setTasksByYard((prev) => ({
+                          ...prev,
+                          [yard.id]: prev[yard.id].map((task) =>
+                            task.id === t.id
+                              ? { ...task, day_completed: completed }
+                              : task
+                          ),
+                        }));
+
+                        try {
+                          await updateTask(t.id, { day_completed: completed });
+                        } catch (err) {
+                          console.error("Failed to update task:", err);
+                          setTasksByYard((prev) => ({
+                            ...prev,
+                            [yard.id]: prev[yard.id].map((task) =>
+                              task.id === t.id
+                                ? { ...task, day_completed: t.day_completed }
+                                : task
+                            ),
+                          }));
+                          alert("Failed to update task completion");
+                        }
+                      }}
+                      className="w-5 h-5"
+                      style={{ accentColor: "var(--color-medium)" }}
+                    />
+
+                    {/* Activity + Date */}
+                    <div className="flex-1 flex items-center justify-between ml-2">
+                      <span className="truncate">{t.activity_type}</span>
+                      <span className="ml-2 flex-shrink-0">
+                        {t.day_scheduled.split("-").slice(1).join("/")}
+                      </span>
+                    </div>
+
+                    {/* Edit/Delete icons */}
+                    <div className="flex gap-2 ml-2 flex-shrink-0">
+                      <EditIcon
+                        fontSize="small"
+                        onClick={() => handleEditTask(t)}
+                      />
+                      <DeleteForeverIcon
+                        fontSize="small"
+                        color="error"
+                        onClick={() => {
+                          setTaskToDelete(t);
+                          setConfirmOpen(true);
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+              {tasks.filter((t) => t.day_scheduled < today).length >
+                past.length && (
+                <Button
+                  onClick={() =>
+                    setPastLimitByYard((prev) => ({
+                      ...prev,
+                      [yard.id]: (prev[yard.id] ?? 5) + 5, // adjust how many more to show here
+                    }))
+                  }
+                  className="mt-2 w-full"
+                >
+                  Show next 5 tasks
+                </Button>
+              )}
             </div>
           );
 
