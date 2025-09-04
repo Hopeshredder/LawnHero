@@ -12,6 +12,7 @@ class YardGroup(models.Model):
 class Yard(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="yards")
     yard_name = models.CharField(max_length=100, default="Unnamed Yard")
+    zip_code = models.CharField(max_length=10, default="unknown")
     yard_size = models.IntegerField(validators=[MinValueValidator(0)], default=0)
     soil_type = models.CharField(max_length=20, default="Unknown")
     grass_type = models.CharField(max_length=20, default="Unknown")

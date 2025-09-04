@@ -32,7 +32,10 @@ export default function NewYardModal({
   const [yardName, setYardName] = useState(yard?.yard_name || "");
   const [yardSize, setYardSize] = useState(yard?.yard_size || 0);
   const [soilType, setSoilType] = useState(yard?.soil_type || "Unknown");
-  const [grassType, setGrassType] = useState(yard?.grass_type || "Unknown"); // add fields for zip or address, convert to lat lon for backend
+  const [grassType, setGrassType] = useState(yard?.grass_type || "Unknown");
+  const [zipCode, setzipCode] = useState(yard?.zip_code || "");
+  const [latitude, setLatitude] = useState(yard?.latitude || "");
+  const [longitude, setLongitude] = useState(yard?.longitude || "");
   const [yardGroup, setYardGroup] = useState(yard?.yard_group ?? "");
   const [newGroupName, setNewGroupName] = useState("");
   const [availableGroups, setAvailableGroups] = useState(groups);
@@ -51,6 +54,7 @@ export default function NewYardModal({
       setYardSize(yard.yard_size);
       setSoilType(yard.soil_type);
       setGrassType(yard.grass_type);
+      setzipCode(yard.zip_code);
       setYardGroup(yard?.yard_group ?? "");
       setNewGroupName("");
     } else {
@@ -58,6 +62,7 @@ export default function NewYardModal({
       setYardSize(0);
       setSoilType("Unknown");
       setGrassType("Unknown");
+      setzipCode("");
       setYardGroup("");
       setNewGroupName("");
     }
@@ -74,6 +79,21 @@ export default function NewYardModal({
     }
     if (Number(yardSize) < 0) {
       setError("Yard size must be 0 or greater.");
+      return;
+    }
+
+    if (!/^\d{5}$/.test(zipCode)) {
+      setError("Zip code must be exactly 5 digits.");
+      return;
+    }
+
+    let coords = {};
+    try {
+      coords = await fetchLatLonFromZip(zipCode);
+      setLatitude(coords.latitude);
+      setLongitude(coords.longitude);
+    } catch (err) {
+      setError("Failed to resolve ZIP code to coordinates.");
       return;
     }
 
@@ -97,6 +117,9 @@ export default function NewYardModal({
         yard_size: Number(yardSize),
         soil_type: soilType || "Unknown",
         grass_type: grassType || "Unknown",
+        zip_code: zipCode || "",
+        latitude: coords.latitude,
+        longitude: coords.longitude,
         yard_group: finalGroupId,
       };
 
@@ -133,6 +156,7 @@ export default function NewYardModal({
         setYardSize(0);
         setSoilType("Unknown");
         setGrassType("Unknown");
+        setzipCode("Unknown");
         setYardGroup("");
         setNewGroupName("");
       }
@@ -151,6 +175,19 @@ export default function NewYardModal({
       setLoading(false);
     }
   };
+
+  async function fetchLatLonFromZip(zipCode) {
+    const res = await fetch(`https://api.zippopotam.us/us/${zipCode}`);
+    if (!res.ok) {
+      throw new Error("Could not fetch coordinates for ZIP");
+    }
+    const data = await res.json();
+    const place = data.places?.[0];
+    return {
+      latitude: parseFloat(place.latitude),
+      longitude: parseFloat(place.longitude),
+    };
+  }
 
   const handleConfirmGroupDelete = async () => {
     if (!groupToDelete) return;
@@ -206,6 +243,19 @@ export default function NewYardModal({
               multiline
               minRows={1}
               maxRows={4}
+            />
+            <TextField
+              fullWidth
+              label="Zip Code"
+              value={zipCode}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (/^\d{0,5}$/.test(val)) {
+                  setzipCode(val);
+                }
+              }}
+              disabled={loading}
+              inputProps={{ maxLength: 5 }}
             />
             <TextField
               fullWidth

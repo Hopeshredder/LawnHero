@@ -238,6 +238,9 @@ export default function Dashboard() {
                       content={
                         <>
                           <div className="flex justify-between">
+                            <strong>Zipcode:</strong> {yard.zip_code}
+                          </div>
+                          <div className="flex justify-between">
                             <strong>Size:</strong> {yard.yard_size} sqft
                           </div>
                           <div className="flex justify-between">
@@ -401,6 +404,9 @@ export default function Dashboard() {
                       title={yard.yard_name}
                       content={
                         <>
+                          <div className="flex justify-between">
+                            <strong>Zipcode:</strong> {yard.zip_code}
+                          </div>
                           <div className="flex justify-between">
                             <strong>Size:</strong> {yard.yard_size} sqft
                           </div>
