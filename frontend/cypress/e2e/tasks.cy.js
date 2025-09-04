@@ -137,7 +137,9 @@ describe("To-Do page task creation flow with single yard", () => {
         const editName = "mow changed"
         const today = new Date().toISOString().split("T")[0]
 
-        cy.get("#pastTasks").find("[data-testid='EditIcon']").click()
+        // cy.get("#pastTasks").find("[data-testid='EditIcon']").click()
+        cy.get('#pastTasks svg').eq(0).click()
+
 
         cy.get('input#activityType').clear().type(editName);
         cy.get('input#scheduledDate').clear().type(today);
@@ -195,7 +197,8 @@ describe("To-Do page task creation flow with single yard", () => {
 
     // Subtest to delete a task
     it("Checks the delete a task functionality", () => {
-        cy.get("#pastTasks").find("[data-testid='DeleteForeverIcon']").click()
+        // cy.get("#pastTasks").find("[data-testid='DeleteForeverIcon']").click()
+        cy.get('#pastTasks svg').eq(1).click()
 
         cy.intercept("DELETE", "**/tasks/task/1/", { statusCode: 204 }).as("taskDelete")
         cy.intercept("GET", "**/tasks/1/", {
