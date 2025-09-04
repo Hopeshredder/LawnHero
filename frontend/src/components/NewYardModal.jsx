@@ -257,6 +257,7 @@ export default function NewYardModal({
             }}
           >
             <TextField
+              id="yardNameInput"
               fullWidth
               label="Yard Name"
               value={yardName}
@@ -267,6 +268,7 @@ export default function NewYardModal({
               maxRows={4}
             />
             <TextField
+              id="zipCodeInput"
               fullWidth
               label="Zip Code"
               value={zipCode}
@@ -287,6 +289,7 @@ export default function NewYardModal({
             </Button>
             <TextField
               fullWidth
+              id="yardSizeInput"
               label="Yard Size (sqft)"
               type="number"
               value={yardSize}
@@ -296,6 +299,7 @@ export default function NewYardModal({
             />
             <TextField
               fullWidth
+              id='soilTypeInput'
               label="Soil Type"
               value={soilType}
               onChange={(e) => setSoilType(e.target.value)}
@@ -306,6 +310,7 @@ export default function NewYardModal({
             />
             <TextField
               fullWidth
+              id="grassTypeInput"
               label="Grass Type"
               value={grassType}
               onChange={(e) => setGrassType(e.target.value)}
@@ -324,7 +329,7 @@ export default function NewYardModal({
                   setNewGroupName(""); // clear new group input if selecting existing
                 }}
               >
-                <MenuItem value="">N/A</MenuItem>
+                <MenuItem id='groupNA' value="">N/A</MenuItem>
                 {availableGroups.map((group) => (
                   <MenuItem key={group.id} value={group.id.toString()}>
                     {group.group_name || "Unnamed Group"}
@@ -335,6 +340,7 @@ export default function NewYardModal({
 
             <TextField
               fullWidth
+              id='newGroupInput'
               label="Or create new group"
               value={newGroupName}
               onChange={(e) => setNewGroupName(e.target.value)}

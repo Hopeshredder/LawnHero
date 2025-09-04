@@ -233,6 +233,7 @@ export default function Dashboard() {
                 <div className="space-y-4">
                   {groupYards.map((yard) => (
                     <CustomAccordion
+                      id={`yard-${yard.id}`}
                       key={yard.id}
                       title={yard.yard_name}
                       content={
