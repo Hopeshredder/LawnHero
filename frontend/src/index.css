@@ -1,3 +1,6 @@
+@import "leaflet/dist/leaflet.css";
+@import "leaflet-draw/dist/leaflet.draw.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,4 +14,8 @@
   --color-darkest: #194225;    /* deepest green / accent */
   --color-head: #a14525;       /* dark orange head color */
   --color-head-light: #c65b3b; /* light orange head color */
+}
+
+.leaflet-draw-tooltip {
+  display: none !important;
 }

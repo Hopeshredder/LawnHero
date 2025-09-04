@@ -18,6 +18,7 @@ import {
   removeYardGroup,
 } from "../Api";
 import ConfirmModal from "../components/ConfirmModal";
+import MapMyYard from "./MapMyYard";
 
 export default function NewYardModal({
   open,
@@ -47,6 +48,8 @@ export default function NewYardModal({
 
   const [customizePrefs, setCustomizePrefs] = useState(false);
 
+  const [mapOpen, setMapOpen] = useState(false);
+
   // Sync modal fields when editing a yard
   useEffect(() => {
     if (yard) {
@@ -57,6 +60,17 @@ export default function NewYardModal({
       setzipCode(yard.zip_code);
       setYardGroup(yard?.yard_group ?? "");
       setNewGroupName("");
+      if (yard.zip_code && (!yard.latitude || !yard.longitude)) {
+        fetchLatLonFromZip(yard.zip_code)
+          .then(({ latitude, longitude }) => {
+            setLatitude(latitude);
+            setLongitude(longitude);
+          })
+          .catch((err) => console.error("Failed to get lat/lon:", err));
+      } else {
+        setLatitude(yard.latitude);
+        setLongitude(yard.longitude);
+      }
     } else {
       setYardName("");
       setYardSize(0);
@@ -87,16 +101,6 @@ export default function NewYardModal({
       return;
     }
 
-    let coords = {};
-    try {
-      coords = await fetchLatLonFromZip(zipCode);
-      setLatitude(coords.latitude);
-      setLongitude(coords.longitude);
-    } catch (err) {
-      setError("Failed to resolve ZIP code to coordinates.");
-      return;
-    }
-
     setLoading(true);
     setError("");
 
@@ -118,8 +122,8 @@ export default function NewYardModal({
         soil_type: soilType || "Unknown",
         grass_type: grassType || "Unknown",
         zip_code: zipCode || "",
-        latitude: coords.latitude,
-        longitude: coords.longitude,
+        latitude: latitude,
+        longitude: longitude,
         yard_group: finalGroupId,
       };
 
@@ -189,6 +193,24 @@ export default function NewYardModal({
     };
   }
 
+  const handleZipChange = async (e) => {
+    const val = e.target.value;
+    if (/^\d{0,5}$/.test(val)) {
+      setzipCode(val);
+
+      // Only fetch when 5 digits are entered
+      if (val.length === 5) {
+        try {
+          const coords = await fetchLatLonFromZip(val);
+          setLatitude(coords.latitude);
+          setLongitude(coords.longitude);
+        } catch (err) {
+          console.error("Failed to resolve ZIP code:", err);
+        }
+      }
+    }
+  };
+
   const handleConfirmGroupDelete = async () => {
     if (!groupToDelete) return;
     try {
@@ -248,18 +270,24 @@ export default function NewYardModal({
               fullWidth
               label="Zip Code"
               value={zipCode}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (/^\d{0,5}$/.test(val)) {
-                  setzipCode(val);
-                }
-              }}
+              onChange={handleZipChange}
               disabled={loading}
               inputProps={{ maxLength: 5 }}
             />
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#a14525",
+                "&:hover": { backgroundColor: "#c65b3b" },
+              }}
+              onClick={() => setMapOpen(true)}
+              disabled={loading}
+            >
+              Map My Yard
+            </Button>
             <TextField
               fullWidth
-              label="Yard Size"
+              label="Yard Size (sqft)"
               type="number"
               value={yardSize}
               onChange={(e) => setYardSize(e.target.value)}
@@ -353,6 +381,45 @@ export default function NewYardModal({
               disabled={loading}
             >
               {loading ? "Saving..." : customizePrefs ? "Next" : "Save"}
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+      <Modal open={mapOpen} onClose={() => setMapOpen(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "90%",
+            height: "80%",
+            bgcolor: "white",
+            p: 2,
+            display: "flex",
+            flexDirection: "column", // stack map and button vertically
+          }}
+        >
+          <Box sx={{ flex: 1 }}>
+            <MapMyYard
+              latitude={latitude}
+              longitude={longitude}
+              onPolygonComplete={({ latLngs, area }) => {
+                setYardSize(Math.round(area * 10.7639)); // sqm → sqft
+              }}
+            />
+          </Box>
+
+          <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#a14525",
+                "&:hover": { backgroundColor: "#c65b3b" },
+              }}
+              onClick={() => setMapOpen(false)}
+            >
+              Finish
             </Button>
           </Box>
         </Box>
