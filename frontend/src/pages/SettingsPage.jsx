@@ -109,20 +109,6 @@ export default function Settings() {
             </Button>
           </div>
         </div>
-
-        <div className="space-y-6">
-          <div className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
-            <p className="text-gray-500">Lawn Care Ratios</p>
-            <div>
-              <ul>
-                <li>Twice</li>
-                <li>Thrice</li>
-                <li>Four times</li>
-                <li>Five times</li>
-              </ul>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
