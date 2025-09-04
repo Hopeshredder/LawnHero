@@ -31,7 +31,8 @@ describe("To-Do page task creation flow with single yard", () => {
                     "longitude": "Unknown",
                     "latitude": "Unknown",
                     "user": 8,
-                    "yard_group": null
+                    "yard_group": null,
+                    "zip_code": "32548"
                 }
             ]
         }).as('yardList');
@@ -41,13 +42,13 @@ describe("To-Do page task creation flow with single yard", () => {
     it("Creates a new task", () => {
         const activityName = "water front yard"
         const today = new Date().toISOString().split("T")[0]
-        
+
 
         cy.visit("/todo")
         cy.wait("@authMe")
+        cy.wait("@taskList")
 
         cy.get("h3").should("contain", "adfadsf").click()
-        cy.wait("@taskList")
         cy.get("#addTasks Button").click()
         cy.get("#newTaskTitle").should("be.visible")
         cy.get('input#activityType').type(activityName);
@@ -71,15 +72,99 @@ describe("To-Do page task creation flow with single yard", () => {
                     "day_completed": null,
                     "yard": 1
                 }
-            ] }).as("taskList")
+            ]
+        }).as("taskList")
 
 
         cy.get("#saveButton").click()
         cy.wait("@taskAdd")
-        
+
         cy.get("#futureTasks").should("contain", activityName)
     })
 })
 //      TODO: Subtest to edit a task
+describe("To-Do page task creation flow with single yard", () => {
+    beforeEach(() => {
+        const activityName = "mow"
+        const yesterday = "2025-09-03"
+        
+        cy.intercept('GET', '**/users/auth/me/', { statusCode: 200, body: { email: "test@example.com", is_super: false } }).as('authMe');
+
+        // Mock get_yards response with no yards
+        cy.intercept('GET', '**/yards/', {
+            statusCode: 200, body: [
+                {
+                    "id": 1,
+                    "yard_name": "adfadsf",
+                    "yard_size": 0,
+                    "soil_type": "Unknown",
+                    "grass_type": "Unknown",
+                    "longitude": "Unknown",
+                    "latitude": "Unknown",
+                    "user": 8,
+                    "yard_group": null,
+                    "zip_code": "32548"
+                }
+            ]
+        }).as('yardList');
+
+        cy.intercept("GET", "**/tasks/1/", {
+            status: 200, body: [
+                {
+                    "id": 1,
+                    "activity_type": activityName,
+                    "day_scheduled": yesterday,
+                    "day_completed": null,
+                    "yard": 1
+                },
+            ]
+        }).as("taskList")
+    })
+    
+    it("Edits a task", () => {
+        const editName = "mow changed"
+        const today = new Date().toISOString().split("T")[0]
+
+        cy.visit("/todo")
+        cy.wait("@authMe")
+        cy.wait("@yardList")
+
+        cy.get("h3").should("contain", "adfadsf").click()
+        cy.get("#pastTasks").should("contain", "mow")
+        
+        cy.get("#pastTasks").find("[data-testid='EditIcon']").click()
+        
+        cy.get('input#activityType').clear().type(editName);
+        cy.get('input#scheduledDate').clear().type(today);
+        
+        cy.intercept("PUT", "**/tasks/task/1/", {
+            status: 201, body: {
+                "id": 1,
+                "activity_type": editName,
+                "day_scheduled": today,
+                "day_completed": null,
+                "yard": 1
+            }
+        }).as("taskEdit")
+
+        cy.intercept("GET", "**/tasks/1/", {
+            status: 200, body: [
+                {
+                    "id": 1,
+                    "activity_type": editName,
+                    "day_scheduled": today,
+                    "day_completed": null,
+                    "yard": 1
+                }
+            ]
+        }).as("taskList")
+
+        cy.get("#saveButton").click()
+        cy.wait("@taskEdit")
+        cy.wait("@taskList")
+
+        cy.get("#futureTasks").should("contain", editName)
+    })
+})
 //      TODO: Subtest to complete a task
 //      TODO: Subtest to delete a task
