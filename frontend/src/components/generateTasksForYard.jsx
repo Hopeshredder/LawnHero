@@ -1,4 +1,4 @@
-import { createTask, getPrefs } from "../Api";
+import { createTask, getPrefs, getTaskForYard, deleteTask } from "../Api";
 
 // Helper to get next Saturday from a given date
 function getNextSaturday(fromDate = new Date()) {
@@ -17,13 +17,18 @@ function formatDate(date) {
   return `${y}-${m}-${d}`;
 }
 
-export async function generateTasksForYard(yard) {
-  let prefs;
-  try {
-    prefs = await getPrefs(yard.id);
-  } catch (err) {
-    console.warn("Failed to fetch preferences, skipping task generation", err);
-    return;
+export async function generateTasksForYard(yard, options = {}) {
+  const { stopDates = {}, seasonalTasks = {}, prefs: passedPrefs } = options;
+
+  // Use passed prefs first; only fetch if not provided
+  let prefs = passedPrefs;
+  if (!prefs) {
+    try {
+      prefs = await getPrefs(yard.id);
+    } catch (err) {
+      console.warn("Failed to fetch preferences, skipping task generation", err);
+      return;
+    }
   }
 
   if (!prefs) {
@@ -31,17 +36,31 @@ export async function generateTasksForYard(yard) {
     return;
   }
 
-  const waterInterval = prefs.watering_interval ?? 2;
-  const mowInterval = prefs.mowing_interval ?? 7;
+  // --- DELETE OLD AUTO-GENERATED WATER & MOW TASKS ---
+  try {
+    const existingTasks = await getTaskForYard(yard.id);
+    const tasksToDelete = existingTasks.filter(
+      (t) =>
+        t.auto_generated &&
+        (t.activity_type === "Water" || t.activity_type === "Mow")
+    );
+    for (let t of tasksToDelete) {
+      await deleteTask(t.id);
+    }
+  } catch (err) {
+    console.error("Failed to delete old auto-generated Water/Mow tasks", err);
+  }
 
   const today = new Date();
+  const waterInterval = prefs.watering_interval ?? 2;
+  const mowInterval = prefs.mowing_interval ?? 7;
+  const waterStop = stopDates.watering || new Date(today.getFullYear(), 10, 1);
+  const mowStop = stopDates.mowing || new Date(today.getFullYear(), 10, 1);
   const year = today.getFullYear();
 
   // --- WATER ---
   let waterDate = new Date(today);
-  const november = new Date(today.getFullYear(), 10, 1); // November 1st of current year
-
-  while (waterDate < november) {
+  while (waterDate < waterStop) {
     try {
       await createTask(yard.id, {
         activity_type: "Water",
@@ -51,14 +70,12 @@ export async function generateTasksForYard(yard) {
     } catch (err) {
       console.error("Failed to create Water task", err);
     }
-
     waterDate.setDate(waterDate.getDate() + waterInterval);
   }
 
   // --- MOW ---
   let mowDate = getNextSaturday(today);
-
-  while (mowDate < november) {
+  while (mowDate < mowStop) {
     try {
       await createTask(yard.id, {
         activity_type: "Mow",
@@ -68,18 +85,17 @@ export async function generateTasksForYard(yard) {
     } catch (err) {
       console.error("Failed to create Mow task", err);
     }
-
     mowDate.setDate(mowDate.getDate() + mowInterval);
   }
 
   // --- FERTILIZE ---
-  const fertDates = [
-    new Date(year, 2, 1), // March
-    new Date(year, 5, 1), // June
-    new Date(year, 8, 17), // September
+  const fertilizeDates = seasonalTasks.fertilize || [
+    new Date(year, 2, 1),
+    new Date(year, 5, 1),
+    new Date(year, 8, 17),
   ];
 
-  for (let date of fertDates) {
+  for (let date of fertilizeDates) {
     const taskDate = getNextSaturday(date);
     try {
       await createTask(yard.id, {
@@ -92,9 +108,9 @@ export async function generateTasksForYard(yard) {
     }
   }
   // --- AERATE ---
-  const aerateDates = [
-    new Date(year, 3, 1), // April
-    new Date(year, 8, 1), // September
+  const aerateDates = seasonalTasks.aerate || [
+    new Date(year, 3, 1),
+    new Date(year, 8, 1),
   ];
   for (let date of aerateDates) {
     const taskDate = getNextSaturday(date);
@@ -110,9 +126,9 @@ export async function generateTasksForYard(yard) {
   }
 
   // --- DETHATCH ---
-  const dethatchDates = [
-    new Date(year, 3, 10), // mid-April
-    new Date(year, 8, 9), // mid-September
+  const dethatchDates = seasonalTasks.dethatch || [
+    new Date(year, 3, 10),
+    new Date(year, 8, 9),
   ];
   for (let date of dethatchDates) {
     const taskDate = getNextSaturday(date);

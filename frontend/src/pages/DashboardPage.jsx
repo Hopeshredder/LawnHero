@@ -16,7 +16,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import PreferencesModal from "../components/PreferencesModal";
 
 export default function Dashboard() {
-  // make excessively long yard names stay anchored left and ... on right
+  // make excessively long yard names stay anchored left and ... on right, need to clean up preferences display (interval to dates?)
   const [yards, setYards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
