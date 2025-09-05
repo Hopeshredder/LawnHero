@@ -87,6 +87,7 @@ export default function PreferencesModal({
 
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
           <TextField
+            id='wateringIntervalInput'
             label="Watering Interval (days)"
             type="number"
             value={wateringInterval}
@@ -103,6 +104,7 @@ export default function PreferencesModal({
             }}
           />
           <TextField
+            id='wateringRateInput'
             label="Watering Rate (in/week)"
             type="number"
             step="0.1"
@@ -120,6 +122,7 @@ export default function PreferencesModal({
             }}
           />
           <TextField
+            id='fertilizingIntervalInput'
             label="Fertilizing Interval (days)"
             type="number"
             value={fertilizingInterval}
@@ -138,6 +141,7 @@ export default function PreferencesModal({
             }}
           />
           <TextField
+            id='fertilizingRateInput'
             label="Fertilizing Rate (lbs/1000sqft)"
             type="number"
             step="0.1"
@@ -155,6 +159,7 @@ export default function PreferencesModal({
             }}
           />
           <TextField
+            id='mowingIntervalInput'
             label="Mowing Interval (days)"
             type="number"
             value={mowingInterval}
@@ -171,6 +176,7 @@ export default function PreferencesModal({
             }}
           />
           <TextField
+            id='aerationIntervalInput'
             label="Aeration Interval (days)"
             type="number"
             value={aerationInterval}
@@ -187,6 +193,7 @@ export default function PreferencesModal({
             }}
           />
           <TextField
+            id='dethatchingIntervalInput'
             label="Dethatching Interval (days)"
             type="number"
             value={dethatchingInterval}
