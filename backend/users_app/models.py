@@ -12,10 +12,14 @@ class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Email must be set")
-        email = self.normalize_email(email)
+        # makes email lowercase and removes leading/trailing spaces
+        email = self.normalize_email(email).strip().lower()
         user = self.model(email=email, **extra_fields)
-        user.set_password(password)
-        user.save()
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
+        user.save(using=self._db)
         return user
 
     def create_superuser(self, email, password, **extra_fields):

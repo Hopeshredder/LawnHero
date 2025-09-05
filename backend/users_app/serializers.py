@@ -29,3 +29,14 @@ class UserSerializer(s.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+
+
+class ProfileUpdateSerializer(s.Serializer):
+    current_password = s.CharField(write_only=True, required=True)
+    new_email = s.EmailField(required=False, allow_null=True, allow_blank=True)
+    new_password = s.CharField(write_only=True, required=False, min_length=8)
+
+    def validate(self, attrs):
+        if not attrs.get("new_email") and not attrs.get("new_password"):
+            raise s.ValidationError("Provide new_email or new_password.")
+        return attrs
