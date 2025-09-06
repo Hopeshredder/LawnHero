@@ -32,7 +32,6 @@ async function safeCreateTask(yardId, activity, date) {
 
 // --- Helper to delete old auto-generated tasks for given types ---
 async function deleteOldAutoTasks(yardId, types = []) {
-
   try {
     const tasks = await getTaskForYard(yardId);
     for (const t of tasks.filter(
@@ -63,6 +62,33 @@ async function generateIntervalTasks(
   }
 }
 
+// --- Helper to safely create a task only if it doesn't exist ---
+async function safeCreateTaskUnique(yardId, activity, date, existingTasks) {
+  const formattedDate = formatDate(date);
+  const duplicate = existingTasks.some(
+    (t) =>
+      t.auto_generated &&
+      t.activity_type === activity &&
+      t.day_scheduled === formattedDate
+  );
+
+  if (duplicate) {
+    console.log(`Skipping duplicate ${activity} task on ${formattedDate}`);
+    return;
+  }
+
+  try {
+    const task = await createTask(yardId, {
+      activity_type: activity,
+      day_scheduled: formattedDate,
+      auto_generated: true,
+    });
+    existingTasks.push(task); // keep list updated
+  } catch (err) {
+    console.error(`Failed to create ${activity} task`, err);
+  }
+}
+
 // --- Main generator function ---
 export async function generateTasksForYard(yard, options = {}) {
   const { stopDates = {}, seasonalTasks = {}, prefs: passedPrefs } = options;
@@ -84,6 +110,8 @@ export async function generateTasksForYard(yard, options = {}) {
     console.warn("No preferences found for yard", yard.id);
     return;
   }
+
+  const existingTasks = await getTaskForYard(yard.id);
 
   // --- DELETE OLD WATER & MOW TASKS ---
   await deleteOldAutoTasks(yard.id, ["Water", "Mow"]);
@@ -131,7 +159,12 @@ export async function generateTasksForYard(yard, options = {}) {
 
   for (const [activity, dates] of Object.entries(seasonalMapping)) {
     for (let date of dates) {
-      await safeCreateTask(yard.id, activity, getNextSaturday(date));
+      await safeCreateTaskUnique(
+        yard.id,
+        activity,
+        getNextSaturday(date),
+        existingTasks
+      );
     }
   }
 }
