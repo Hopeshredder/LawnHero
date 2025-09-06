@@ -39,7 +39,10 @@ export default function Dashboard() {
       const data = await getYardList();
       setYards(
         Array.isArray(data)
-          ? data.map((y) => ({ ...y, yard_group: y.yard_group?.id ?? y.yard_group }))
+          ? data.map((y) => ({
+              ...y,
+              yard_group: y.yard_group?.id ?? y.yard_group,
+            }))
           : []
       );
     } catch {
@@ -91,7 +94,10 @@ export default function Dashboard() {
     await Promise.all([fetchYards(), fetchGroups()]);
   };
 
-  const handleDeleteClick = (yardId) => setSelectedYardId(yardId) && setConfirmOpen(true);
+  const handleDeleteClick = (yardId) => {
+    setSelectedYardId(yardId);
+    setConfirmOpen(true);
+  };
 
   const handleConfirmDelete = async () => {
     if (!selectedYardId) return;
@@ -102,12 +108,15 @@ export default function Dashboard() {
 
       if (yardToDelete?.yard_group) {
         const stillHasYards = yards.some(
-          (y) => y.yard_group === yardToDelete.yard_group && y.id !== selectedYardId
+          (y) =>
+            y.yard_group === yardToDelete.yard_group && y.id !== selectedYardId
         );
         if (!stillHasYards) {
           setGroupToDelete({
             id: yardToDelete.yard_group,
-            name: groups.find((g) => g.id === yardToDelete.yard_group)?.group_name ?? "Unnamed Group",
+            name:
+              groups.find((g) => g.id === yardToDelete.yard_group)
+                ?.group_name ?? "Unnamed Group",
           });
         }
       }
@@ -160,7 +169,8 @@ export default function Dashboard() {
       open: confirmGroupOpen,
       onClose: () => setConfirmGroupOpen(false),
       onConfirm: handleConfirmDeleteGroup,
-      message: "Are you sure you want to delete this group? All yards will be unassigned.",
+      message:
+        "Are you sure you want to delete this group? All yards will be unassigned.",
     },
     {
       open: !!groupToDelete,
@@ -181,12 +191,18 @@ export default function Dashboard() {
     <div className="px-4 sm:px-8 md:px-16 lg:px-24 flex flex-col justify-start min-h-screen w-full">
       <h1 className="text-2xl font-bold mb-2 text-center">Yard Groups</h1>
 
-      {loading ? <p>Loading yards...</p> : error ? <p className="text-red-500">{error}</p> : null}
+      {loading ? (
+        <p>Loading yards...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : null}
 
       <div className="rounded-lg pt-4 w-full flex flex-col items-center justify-center space-y-4">
         {[...groups, ungroupedGroup].map((group) => {
           const groupYards =
-            group.id === null ? yards.filter((y) => !y.yard_group) : yards.filter((y) => y.yard_group === group.id);
+            group.id === null
+              ? yards.filter((y) => !y.yard_group)
+              : yards.filter((y) => y.yard_group === group.id);
           if (!groupYards.length && group.id !== null) return null;
 
           return (
@@ -211,7 +227,12 @@ export default function Dashboard() {
 
         <Button
           variant="contained"
-          sx={{ backgroundColor: "#a14525", "&:hover": { backgroundColor: "#c65b3b" }, maxWidth: "45%", mt: 2 }}
+          sx={{
+            backgroundColor: "#a14525",
+            "&:hover": { backgroundColor: "#c65b3b" },
+            maxWidth: "45%",
+            mt: 2,
+          }}
           onClick={() => setModalOpen(true)}
         >
           New Yard
