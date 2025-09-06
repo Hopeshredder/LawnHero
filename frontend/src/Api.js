@@ -278,3 +278,17 @@ export const fetchRecentTasks = async (yard_id) => {
     throw err;
   }
 };
+
+// Converts zipcode to lat lon
+export const fetchLatLonFromZip = async (zipCode) => {
+  const res = await fetch(`https://api.zippopotam.us/us/${zipCode}`);
+  if (!res.ok) {
+    throw new Error("Could not fetch coordinates for ZIP");
+  }
+  const data = await res.json();
+  const place = data.places?.[0];
+  return {
+    latitude: parseFloat(place.latitude),
+    longitude: parseFloat(place.longitude),
+  };
+};

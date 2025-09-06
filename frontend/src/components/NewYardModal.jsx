@@ -16,9 +16,11 @@ import {
   createYardGroup,
   addYardToYardGroup,
   removeYardGroup,
+  fetchLatLonFromZip,
 } from "../Api";
 import ConfirmModal from "../components/ConfirmModal";
 import MapMyYard from "./MapMyYard";
+import { generateTasksForYard } from "./generateTasksForYard";
 
 export default function NewYardModal({
   open,
@@ -135,6 +137,11 @@ export default function NewYardModal({
         savedYard = await createYard(payload);
       }
 
+      // autogenerate tasks if not customizing preferences ---
+      if (!customizePrefs) {
+        await generateTasksForYard(savedYard);
+      }
+
       // Ensure yard is added to the selected group
       if (finalGroupId) {
         await addYardToYardGroup(finalGroupId, savedYard.id);
@@ -179,19 +186,6 @@ export default function NewYardModal({
       setLoading(false);
     }
   };
-
-  async function fetchLatLonFromZip(zipCode) {
-    const res = await fetch(`https://api.zippopotam.us/us/${zipCode}`);
-    if (!res.ok) {
-      throw new Error("Could not fetch coordinates for ZIP");
-    }
-    const data = await res.json();
-    const place = data.places?.[0];
-    return {
-      latitude: parseFloat(place.latitude),
-      longitude: parseFloat(place.longitude),
-    };
-  }
 
   const handleZipChange = async (e) => {
     const val = e.target.value;
@@ -299,7 +293,7 @@ export default function NewYardModal({
             />
             <TextField
               fullWidth
-              id='soilTypeInput'
+              id="soilTypeInput"
               label="Soil Type"
               value={soilType}
               onChange={(e) => setSoilType(e.target.value)}
@@ -329,7 +323,9 @@ export default function NewYardModal({
                   setNewGroupName(""); // clear new group input if selecting existing
                 }}
               >
-                <MenuItem id='groupNA' value="">N/A</MenuItem>
+                <MenuItem id="groupNA" value="">
+                  N/A
+                </MenuItem>
                 {availableGroups.map((group) => (
                   <MenuItem key={group.id} value={group.id.toString()}>
                     {group.group_name || "Unnamed Group"}
@@ -340,7 +336,7 @@ export default function NewYardModal({
 
             <TextField
               fullWidth
-              id='newGroupInput'
+              id="newGroupInput"
               label="Or create new group"
               value={newGroupName}
               onChange={(e) => setNewGroupName(e.target.value)}
