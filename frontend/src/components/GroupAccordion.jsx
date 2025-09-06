@@ -15,8 +15,10 @@ export default function GroupAccordion({
   onEditGroup,
   onDeleteGroup,
   onEditYard,
+  onEditPreferences,
   onDeleteYard,
-  isEditable
+  isEditable,
+  setIsNewYard,
 }) {
   const groupYards = yards.filter((yard) => yard.yard_group === group.id);
 
@@ -71,6 +73,9 @@ export default function GroupAccordion({
               prefs={prefsByYard[yard.id]}
               onEdit={() => onEditYard(yard)}
               onDelete={() => onDeleteYard(yard.id)}
+              setIsNewYard={setIsNewYard}
+              onEditYard={() => onEditYard(yard)}
+              onEditPreferences={() => onEditPreferences(yard)}
             />
           ))}
         </div>
@@ -78,8 +83,17 @@ export default function GroupAccordion({
       actions={
         <div className="flex flex-col items-center gap-2">
           <div className="flex gap-2">
-            <EditIcon variant="outlined" size="small" onClick={() => setEditingGroupId(group.id)} />
-            <DeleteForeverIcon variant="outlined" color="error" size="small" onClick={() => onDeleteGroup(group.id)} />
+            <EditIcon
+              variant="outlined"
+              size="small"
+              onClick={() => setEditingGroupId(group.id)}
+            />
+            <DeleteForeverIcon
+              variant="outlined"
+              color="error"
+              size="small"
+              onClick={() => onDeleteGroup(group.id)}
+            />
           </div>
         </div>
       }

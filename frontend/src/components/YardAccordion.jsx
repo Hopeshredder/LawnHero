@@ -8,6 +8,9 @@ export default function YardAccordion({
   prefs,
   onEdit,
   onDelete,
+  setIsNewYard,
+  onEditYard,
+  onEditPreferences,
 }) {
   const groupName = yard.yard_group
     ? groups.find((g) => g.id === yard.yard_group)?.group_name ||

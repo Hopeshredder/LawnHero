@@ -31,6 +31,7 @@ export default function NewYardModal({
   yards,
   setPreferencesOpen,
   setSelectedYardId,
+  setIsNewYard,
 }) {
   const [yardName, setYardName] = useState(yard?.yard_name || "");
   const [yardSize, setYardSize] = useState(yard?.yard_size || 0);
@@ -86,6 +87,7 @@ export default function NewYardModal({
       setZipError("");
       setError("");
     }
+    setCustomizePrefs(false);
   }, [yard, open]);
 
   useEffect(() => {
@@ -148,7 +150,9 @@ export default function NewYardModal({
 
       // autogenerate tasks if not customizing preferences ---
       if (!customizePrefs) {
-        await generateTasksForYard(savedYard);
+        if (!yard?.id) {
+          await generateTasksForYard(savedYard);
+        }
       }
 
       // Ensure yard is added to the selected group
@@ -176,9 +180,15 @@ export default function NewYardModal({
         setYardSize(0);
         setSoilType("Unknown");
         setGrassType("Unknown");
-        setzipCode("Unknown");
+        setzipCode("");
         setYardGroup("");
         setNewGroupName("");
+      }
+
+      if (!yard?.id) {
+        setIsNewYard(true); // new yard
+      } else {
+        setIsNewYard(false); // editing existing
       }
 
       if (customizePrefs) {
@@ -186,7 +196,7 @@ export default function NewYardModal({
         onClose();
         setPreferencesOpen(true);
       } else {
-        onYardCreated();
+        onYardCreated(savedYard);
         onClose();
       }
     } catch (err) {

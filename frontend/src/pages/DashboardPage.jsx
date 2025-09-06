@@ -33,6 +33,8 @@ export default function Dashboard() {
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [groupToDelete, setGroupToDelete] = useState(null);
 
+  const [isNewYard, setIsNewYard] = useState(false);
+
   // Fetch yards
   const fetchYards = async () => {
     try {
@@ -90,8 +92,21 @@ export default function Dashboard() {
     if (yards.length) fetchAllPrefs();
   }, [yards]);
 
-  const handleYardCreated = async () => {
+  const handleYardCreated = async (createdYard) => {
     await Promise.all([fetchYards(), fetchGroups()]);
+    setModalOpen(false);
+    if (createdYard?.id) {
+      setSelectedYardId(createdYard.id);
+      // setIsNewYard(true);
+      // setPreferencesOpen(true);
+    } else {
+      setIsNewYard(false);
+    }
+  };
+
+  const handlePreferencesSaved = () => {
+    handleYardCreated();
+    setIsNewYard(false);
   };
 
   const handleDeleteClick = (yardId) => {
@@ -187,6 +202,18 @@ export default function Dashboard() {
     },
   ];
 
+  const handleEditYard = (yard) => {
+    setEditYard(yard);
+    setModalOpen(true); // opens NewYardModal
+    setIsNewYard(false); // editing, not new
+  };
+
+  const handleEditPreferences = (yard) => {
+    setSelectedYardId(yard.id);
+    setIsNewYard(false);
+    setPreferencesOpen(true);
+  };
+
   return (
     <div className="px-4 sm:px-8 md:px-16 lg:px-24 flex flex-col justify-start min-h-screen w-full">
       <h1 className="text-2xl font-bold mb-2 text-center">Yard Groups</h1>
@@ -218,9 +245,11 @@ export default function Dashboard() {
               setEditingGroupName={setEditingGroupName}
               onEditGroup={handleSaveGroupName}
               onDeleteGroup={handleDeleteGroupClick}
-              onEditYard={setEditYard}
+              onEditYard={handleEditYard}
+              onEditPreferences={handleEditPreferences}
               onDeleteYard={handleDeleteClick}
               isEditable={group.id !== null}
+              setIsNewYard={setIsNewYard}
             />
           );
         })}
@@ -233,7 +262,11 @@ export default function Dashboard() {
             maxWidth: "45%",
             mt: 2,
           }}
-          onClick={() => setModalOpen(true)}
+          onClick={() => {
+            setModalOpen(true);
+            setEditYard(null);
+            setIsNewYard(false);
+          }}
         >
           New Yard
         </Button>
@@ -251,6 +284,7 @@ export default function Dashboard() {
         yards={yards}
         setPreferencesOpen={setPreferencesOpen}
         setSelectedYardId={setSelectedYardId}
+        setIsNewYard={setIsNewYard}
       />
 
       <PreferencesModal
@@ -259,6 +293,7 @@ export default function Dashboard() {
         yardId={selectedYardId}
         onPreferencesSaved={handleYardCreated}
         initialPrefs={prefsByYard[selectedYardId]}
+        isNewYard={isNewYard}
       />
 
       {confirmModals.map((c, i) => (
