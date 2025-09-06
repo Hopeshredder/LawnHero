@@ -13,7 +13,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import PreferencesModal from "../components/PreferencesModal";
 import GroupAccordion from "../components/GroupAccordion";
 
-export default function Dashboard() {
+export default function Dashboard() { // need to change display of yard prefs given new method
   const [yards, setYards] = useState([]);
   const [groups, setGroups] = useState([]);
   const [prefsByYard, setPrefsByYard] = useState({});
