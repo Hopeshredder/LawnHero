@@ -52,6 +52,8 @@ export default function NewYardModal({
 
   const [mapOpen, setMapOpen] = useState(false);
 
+  const [zipError, setZipError] = useState("");
+
   // Sync modal fields when editing a yard
   useEffect(() => {
     if (yard) {
@@ -81,6 +83,8 @@ export default function NewYardModal({
       setzipCode("");
       setYardGroup("");
       setNewGroupName("");
+      setZipError("");
+      setError("");
     }
   }, [yard, open]);
 
@@ -100,6 +104,11 @@ export default function NewYardModal({
 
     if (!/^\d{5}$/.test(zipCode)) {
       setError("Zip code must be exactly 5 digits.");
+      return;
+    }
+
+    if (zipError) {
+      setError("Please fix the ZIP code before saving.");
       return;
     }
 
@@ -191,6 +200,7 @@ export default function NewYardModal({
     const val = e.target.value;
     if (/^\d{0,5}$/.test(val)) {
       setzipCode(val);
+      setZipError("");
 
       // Only fetch when 5 digits are entered
       if (val.length === 5) {
@@ -200,6 +210,11 @@ export default function NewYardModal({
           setLongitude(coords.longitude);
         } catch (err) {
           console.error("Failed to resolve ZIP code:", err);
+          if (err.message.includes("Could not fetch")) {
+            setZipError("Invalid ZIP code or lookup service unavailable.");
+          } else {
+            setZipError("Failed to validate ZIP code.");
+          }
         }
       }
     }
@@ -269,6 +284,8 @@ export default function NewYardModal({
               onChange={handleZipChange}
               disabled={loading}
               inputProps={{ maxLength: 5 }}
+              error={!!zipError}
+              helperText={zipError || ""}
             />
             <Button
               variant="contained"
