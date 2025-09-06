@@ -409,7 +409,7 @@ export default function NewYardModal({
               onClick={handleSave}
               disabled={loading}
             >
-              {loading ? "Saving..." : customizePrefs ? "Next" : "Save"}
+              {loading ? "Generating Tasks..." : customizePrefs ? "Next" : "Save"}
             </Button>
           </Box>
         </Box>
