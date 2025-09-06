@@ -8,7 +8,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
-export default function Todo() {
+export default function Todo() { // label scheduled column. display completed date and label column. allow filtering and sorting
   const [yards, setYards] = useState([]);
   const [tasksByYard, setTasksByYard] = useState({});
   const [openModal, setOpenModal] = useState(false);

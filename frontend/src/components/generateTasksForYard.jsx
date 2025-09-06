@@ -32,9 +32,15 @@ async function safeCreateTask(yardId, activity, date) {
 
 // --- Helper to delete old auto-generated tasks for given types ---
 async function deleteOldAutoTasks(yardId, types = []) {
+
   try {
     const tasks = await getTaskForYard(yardId);
-    for (const t of tasks.filter(t => t.auto_generated && types.includes(t.activity_type))) {
+    for (const t of tasks.filter(
+      (t) =>
+        t.auto_generated &&
+        types.includes(t.activity_type) &&
+        t.day_completed == null
+    )) {
       await deleteTask(t.id);
     }
   } catch (err) {
@@ -43,7 +49,13 @@ async function deleteOldAutoTasks(yardId, types = []) {
 }
 
 // --- Helper to generate tasks at intervals ---
-async function generateIntervalTasks(yardId, activity, startDate, stopDate, interval) {
+async function generateIntervalTasks(
+  yardId,
+  activity,
+  startDate,
+  stopDate,
+  interval
+) {
   let date = new Date(startDate);
   while (date < stopDate) {
     await safeCreateTask(yardId, activity, date);
@@ -61,7 +73,10 @@ export async function generateTasksForYard(yard, options = {}) {
     try {
       prefs = await getPrefs(yard.id);
     } catch (err) {
-      console.warn("Failed to fetch preferences, skipping task generation", err);
+      console.warn(
+        "Failed to fetch preferences, skipping task generation",
+        err
+      );
       return;
     }
   }
@@ -82,14 +97,36 @@ export async function generateTasksForYard(yard, options = {}) {
   const waterStop = stopDates.watering || new Date(year, 10, 1);
   const mowStop = stopDates.mowing || new Date(year, 10, 1);
 
-  await generateIntervalTasks(yard.id, "Water", today, waterStop, waterInterval);
-  await generateIntervalTasks(yard.id, "Mow", getNextSaturday(today), mowStop, mowInterval);
+  await generateIntervalTasks(
+    yard.id,
+    "Water",
+    today,
+    waterStop,
+    waterInterval
+  );
+  await generateIntervalTasks(
+    yard.id,
+    "Mow",
+    getNextSaturday(today),
+    mowStop,
+    mowInterval
+  );
 
   // Seasonal tasks with defaults
   const seasonalMapping = {
-    Fertilize: seasonalTasks.fertilize || [new Date(year, 2, 1), new Date(year, 5, 1), new Date(year, 8, 17)],
-    Aerate: seasonalTasks.aerate || [new Date(year, 3, 1), new Date(year, 8, 1)],
-    Dethatch: seasonalTasks.dethatch || [new Date(year, 3, 10), new Date(year, 8, 9)],
+    Fertilize: seasonalTasks.fertilize || [
+      new Date(year, 2, 1),
+      new Date(year, 5, 1),
+      new Date(year, 8, 17),
+    ],
+    Aerate: seasonalTasks.aerate || [
+      new Date(year, 3, 1),
+      new Date(year, 8, 1),
+    ],
+    Dethatch: seasonalTasks.dethatch || [
+      new Date(year, 3, 10),
+      new Date(year, 8, 9),
+    ],
   };
 
   for (const [activity, dates] of Object.entries(seasonalMapping)) {
