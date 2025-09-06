@@ -17,10 +17,45 @@ function formatDate(date) {
   return `${y}-${m}-${d}`;
 }
 
+// --- Helper to safely create a task ---
+async function safeCreateTask(yardId, activity, date) {
+  try {
+    await createTask(yardId, {
+      activity_type: activity,
+      day_scheduled: formatDate(date),
+      auto_generated: true,
+    });
+  } catch (err) {
+    console.error(`Failed to create ${activity} task`, err);
+  }
+}
+
+// --- Helper to delete old auto-generated tasks for given types ---
+async function deleteOldAutoTasks(yardId, types = []) {
+  try {
+    const tasks = await getTaskForYard(yardId);
+    for (const t of tasks.filter(t => t.auto_generated && types.includes(t.activity_type))) {
+      await deleteTask(t.id);
+    }
+  } catch (err) {
+    console.error("Failed to delete old auto-generated tasks", err);
+  }
+}
+
+// --- Helper to generate tasks at intervals ---
+async function generateIntervalTasks(yardId, activity, startDate, stopDate, interval) {
+  let date = new Date(startDate);
+  while (date < stopDate) {
+    await safeCreateTask(yardId, activity, date);
+    date.setDate(date.getDate() + interval);
+  }
+}
+
+// --- Main generator function ---
 export async function generateTasksForYard(yard, options = {}) {
   const { stopDates = {}, seasonalTasks = {}, prefs: passedPrefs } = options;
 
-  // Use passed prefs first; only fetch if not provided
+  // Use passed prefs first; fetch only if not provided
   let prefs = passedPrefs;
   if (!prefs) {
     try {
@@ -30,116 +65,36 @@ export async function generateTasksForYard(yard, options = {}) {
       return;
     }
   }
-
   if (!prefs) {
     console.warn("No preferences found for yard", yard.id);
     return;
   }
 
-  // --- DELETE OLD AUTO-GENERATED WATER & MOW TASKS ---
-  try {
-    const existingTasks = await getTaskForYard(yard.id);
-    const tasksToDelete = existingTasks.filter(
-      (t) =>
-        t.auto_generated &&
-        (t.activity_type === "Water" || t.activity_type === "Mow")
-    );
-    for (let t of tasksToDelete) {
-      await deleteTask(t.id);
-    }
-  } catch (err) {
-    console.error("Failed to delete old auto-generated Water/Mow tasks", err);
-  }
+  // --- DELETE OLD WATER & MOW TASKS ---
+  await deleteOldAutoTasks(yard.id, ["Water", "Mow"]);
 
   const today = new Date();
-  const waterInterval = prefs.watering_interval ?? 2;
-  const mowInterval = prefs.mowing_interval ?? 7;
-  const waterStop = stopDates.watering || new Date(today.getFullYear(), 10, 1);
-  const mowStop = stopDates.mowing || new Date(today.getFullYear(), 10, 1);
   const year = today.getFullYear();
 
-  // --- WATER ---
-  let waterDate = new Date(today);
-  while (waterDate < waterStop) {
-    try {
-      await createTask(yard.id, {
-        activity_type: "Water",
-        day_scheduled: formatDate(waterDate),
-        auto_generated: true,
-      });
-    } catch (err) {
-      console.error("Failed to create Water task", err);
-    }
-    waterDate.setDate(waterDate.getDate() + waterInterval);
-  }
+  // Interval-based tasks
+  const waterInterval = prefs.watering_interval ?? 2;
+  const mowInterval = prefs.mowing_interval ?? 7;
+  const waterStop = stopDates.watering || new Date(year, 10, 1);
+  const mowStop = stopDates.mowing || new Date(year, 10, 1);
 
-  // --- MOW ---
-  let mowDate = getNextSaturday(today);
-  while (mowDate < mowStop) {
-    try {
-      await createTask(yard.id, {
-        activity_type: "Mow",
-        day_scheduled: formatDate(mowDate),
-        auto_generated: true,
-      });
-    } catch (err) {
-      console.error("Failed to create Mow task", err);
-    }
-    mowDate.setDate(mowDate.getDate() + mowInterval);
-  }
+  await generateIntervalTasks(yard.id, "Water", today, waterStop, waterInterval);
+  await generateIntervalTasks(yard.id, "Mow", getNextSaturday(today), mowStop, mowInterval);
 
-  // --- FERTILIZE ---
-  const fertilizeDates = seasonalTasks.fertilize || [
-    new Date(year, 2, 1),
-    new Date(year, 5, 1),
-    new Date(year, 8, 17),
-  ];
+  // Seasonal tasks with defaults
+  const seasonalMapping = {
+    Fertilize: seasonalTasks.fertilize || [new Date(year, 2, 1), new Date(year, 5, 1), new Date(year, 8, 17)],
+    Aerate: seasonalTasks.aerate || [new Date(year, 3, 1), new Date(year, 8, 1)],
+    Dethatch: seasonalTasks.dethatch || [new Date(year, 3, 10), new Date(year, 8, 9)],
+  };
 
-  for (let date of fertilizeDates) {
-    const taskDate = getNextSaturday(date);
-    try {
-      await createTask(yard.id, {
-        activity_type: "Fertilize",
-        day_scheduled: formatDate(taskDate),
-        auto_generated: true,
-      });
-    } catch (err) {
-      console.error("Failed to create Fertilize task", err);
-    }
-  }
-  // --- AERATE ---
-  const aerateDates = seasonalTasks.aerate || [
-    new Date(year, 3, 1),
-    new Date(year, 8, 1),
-  ];
-  for (let date of aerateDates) {
-    const taskDate = getNextSaturday(date);
-    try {
-      await createTask(yard.id, {
-        activity_type: "Aerate",
-        day_scheduled: formatDate(taskDate),
-        auto_generated: true,
-      });
-    } catch (err) {
-      console.error("Failed to create Aerate task", err);
-    }
-  }
-
-  // --- DETHATCH ---
-  const dethatchDates = seasonalTasks.dethatch || [
-    new Date(year, 3, 10),
-    new Date(year, 8, 9),
-  ];
-  for (let date of dethatchDates) {
-    const taskDate = getNextSaturday(date);
-    try {
-      await createTask(yard.id, {
-        activity_type: "Dethatch",
-        day_scheduled: formatDate(taskDate),
-        auto_generated: true,
-      });
-    } catch (err) {
-      console.error("Failed to create Dethatch task", err);
+  for (const [activity, dates] of Object.entries(seasonalMapping)) {
+    for (let date of dates) {
+      await safeCreateTask(yard.id, activity, getNextSaturday(date));
     }
   }
 }
