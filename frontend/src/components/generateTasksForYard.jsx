@@ -73,7 +73,6 @@ async function safeCreateTaskUnique(yardId, activity, date, existingTasks) {
   );
 
   if (duplicate) {
-    console.log(`Skipping duplicate ${activity} task on ${formattedDate}`);
     return;
   }
 
