@@ -16,9 +16,11 @@ import {
   createYardGroup,
   addYardToYardGroup,
   removeYardGroup,
+  fetchLatLonFromZip,
 } from "../Api";
 import ConfirmModal from "../components/ConfirmModal";
 import MapMyYard from "./MapMyYard";
+import { generateTasksForYard } from "./generateTasksForYard";
 
 export default function NewYardModal({
   open,
@@ -29,6 +31,7 @@ export default function NewYardModal({
   yards,
   setPreferencesOpen,
   setSelectedYardId,
+  setIsNewYard,
 }) {
   const [yardName, setYardName] = useState(yard?.yard_name || "");
   const [yardSize, setYardSize] = useState(yard?.yard_size || 0);
@@ -49,6 +52,8 @@ export default function NewYardModal({
   const [customizePrefs, setCustomizePrefs] = useState(false);
 
   const [mapOpen, setMapOpen] = useState(false);
+
+  const [zipError, setZipError] = useState("");
 
   // Sync modal fields when editing a yard
   useEffect(() => {
@@ -79,7 +84,10 @@ export default function NewYardModal({
       setzipCode("");
       setYardGroup("");
       setNewGroupName("");
+      setZipError("");
+      setError("");
     }
+    setCustomizePrefs(false);
   }, [yard, open]);
 
   useEffect(() => {
@@ -98,6 +106,11 @@ export default function NewYardModal({
 
     if (!/^\d{5}$/.test(zipCode)) {
       setError("Zip code must be exactly 5 digits.");
+      return;
+    }
+
+    if (zipError) {
+      setError("Please fix the ZIP code before saving.");
       return;
     }
 
@@ -135,6 +148,13 @@ export default function NewYardModal({
         savedYard = await createYard(payload);
       }
 
+      // autogenerate tasks if not customizing preferences ---
+      if (!customizePrefs) {
+        if (!yard?.id) {
+          await generateTasksForYard(savedYard);
+        }
+      }
+
       // Ensure yard is added to the selected group
       if (finalGroupId) {
         await addYardToYardGroup(finalGroupId, savedYard.id);
@@ -160,9 +180,15 @@ export default function NewYardModal({
         setYardSize(0);
         setSoilType("Unknown");
         setGrassType("Unknown");
-        setzipCode("Unknown");
+        setzipCode("");
         setYardGroup("");
         setNewGroupName("");
+      }
+
+      if (!yard?.id) {
+        setIsNewYard(true); // new yard
+      } else {
+        setIsNewYard(false); // editing existing
       }
 
       if (customizePrefs) {
@@ -170,7 +196,7 @@ export default function NewYardModal({
         onClose();
         setPreferencesOpen(true);
       } else {
-        onYardCreated();
+        onYardCreated(savedYard);
         onClose();
       }
     } catch (err) {
@@ -180,23 +206,11 @@ export default function NewYardModal({
     }
   };
 
-  async function fetchLatLonFromZip(zipCode) {
-    const res = await fetch(`https://api.zippopotam.us/us/${zipCode}`);
-    if (!res.ok) {
-      throw new Error("Could not fetch coordinates for ZIP");
-    }
-    const data = await res.json();
-    const place = data.places?.[0];
-    return {
-      latitude: parseFloat(place.latitude),
-      longitude: parseFloat(place.longitude),
-    };
-  }
-
   const handleZipChange = async (e) => {
     const val = e.target.value;
     if (/^\d{0,5}$/.test(val)) {
       setzipCode(val);
+      setZipError("");
 
       // Only fetch when 5 digits are entered
       if (val.length === 5) {
@@ -206,6 +220,11 @@ export default function NewYardModal({
           setLongitude(coords.longitude);
         } catch (err) {
           console.error("Failed to resolve ZIP code:", err);
+          if (err.message.includes("Could not fetch")) {
+            setZipError("Invalid ZIP code or lookup service unavailable.");
+          } else {
+            setZipError("Failed to validate ZIP code.");
+          }
         }
       }
     }
@@ -275,6 +294,8 @@ export default function NewYardModal({
               onChange={handleZipChange}
               disabled={loading}
               inputProps={{ maxLength: 5 }}
+              error={!!zipError}
+              helperText={zipError || ""}
             />
             <Button
               variant="contained"
@@ -299,7 +320,7 @@ export default function NewYardModal({
             />
             <TextField
               fullWidth
-              id='soilTypeInput'
+              id="soilTypeInput"
               label="Soil Type"
               value={soilType}
               onChange={(e) => setSoilType(e.target.value)}
@@ -329,7 +350,9 @@ export default function NewYardModal({
                   setNewGroupName(""); // clear new group input if selecting existing
                 }}
               >
-                <MenuItem id='groupNA' value="">N/A</MenuItem>
+                <MenuItem id="groupNA" value="">
+                  N/A
+                </MenuItem>
                 {availableGroups.map((group) => (
                   <MenuItem key={group.id} value={group.id.toString()}>
                     {group.group_name || "Unnamed Group"}
@@ -340,7 +363,7 @@ export default function NewYardModal({
 
             <TextField
               fullWidth
-              id='newGroupInput'
+              id="newGroupInput"
               label="Or create new group"
               value={newGroupName}
               onChange={(e) => setNewGroupName(e.target.value)}
@@ -386,7 +409,7 @@ export default function NewYardModal({
               onClick={handleSave}
               disabled={loading}
             >
-              {loading ? "Saving..." : customizePrefs ? "Next" : "Save"}
+              {loading ? "Generating Tasks..." : customizePrefs ? "Next" : "Save"}
             </Button>
           </Box>
         </Box>
