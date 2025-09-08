@@ -225,14 +225,12 @@ describe("Dashboard page - testing yard creation flow", () => {
         cy.wait('@postYard');
         
         // Entering non-default values for yard preferences
+        // NOTE: fertilizing, aeration,  and dethatching are not tested currently
         cy.get('[data-cy="prefs-modal"][data-yard-id="1"]').within(() => {
             cy.get('[data-cy="wateringIntervalInput"]').clear().type('4');
             cy.get('[data-cy="wateringRateInput"]').clear().type('5');
-            // cy.get('[data-cy="fertilizingIntervalInput"]').clear().type('6');
             cy.get('[data-cy="fertilizingRateInput"]').clear().type('7');
             cy.get('[data-cy="mowingIntervalInput"]').clear().type('8');
-            // cy.get('[data-cy="aerationIntervalInput"]').clear().type('9');
-            // cy.get('[data-cy="dethatchingIntervalInput"]').clear().type('10');
         });
 
         // Mocking API calls to the backend
@@ -254,11 +252,8 @@ describe("Dashboard page - testing yard creation flow", () => {
         cy.get('div').contains('Unknown').should('be.visible');
         cy.get('div').contains('4 day(s)').should('be.visible');
         cy.get('div').contains('5\" / week').should('be.visible');
-        // cy.get('div').contains('6 day(s)').should('be.visible');
         cy.get('div').contains('7 lbs/1000 sqft').should('be.visible');
         cy.get('div').contains('8 day(s)').should('be.visible');
-        // cy.get('div').contains('9 day(s)').should('be.visible');
-        // cy.get('div').contains('10 day(s)').should('be.visible');
     })
 })
 
