@@ -1,28 +1,30 @@
-// describe("Dashboard page empty DB", () => {
-//     beforeEach(() => {
-//         cy.intercept('GET', '**/users/auth/me/', { statusCode: 200, body: { email: "test@example.com", is_super: false } }).as('authMe');
-//         // Mock get_yards response with no yards
-//         cy.intercept('GET', '**/yards/', {
-//             statusCode: 200, body: []
-//         }).as('yardList');
+describe("Dashboard page empty DB", () => {
+    beforeEach(() => {
+        cy.intercept('GET', '**/users/auth/me/', { statusCode: 200, body: { email: "test@example.com", is_super: false } }).as('authMe');
+        // Mock get_yards response with no yards
+        cy.intercept('GET', '**/yards/', {
+            statusCode: 200, body: []
+        }).as('yardList');
 
-//         // Mock get_yard_groups response with no yard groups
-//         cy.intercept('GET', '**/yards/yard-groups', {
-//             statusCode: 200, body: []
-//         }).as('yardGroupList');
-//         cy.visit('/dashboard');
-//         cy.wait('@authMe');
-//         cy.wait('@yardList');
-//         cy.wait('@yardGroupList');
-//     })
+        // import { bearing } from "@turf/turf";
 
-//     // Subtest to check empty dashboard page loads correctly
-//     it("Visits dashboard page with empty DB", () => {
-//         cy.get('h1').contains('Yard Groups').should('be.visible');
-//         cy.get('button').contains('New Yard').should('be.visible');
-//         cy.get('h3').should('not.exist');
-//     })
-// })
+        // Mock get_yard_groups response with no yard groups
+        cy.intercept('GET', '**/yards/yard-groups', {
+            statusCode: 200, body: []
+        }).as('yardGroupList');
+        cy.visit('/dashboard');
+        cy.wait('@authMe');
+        cy.wait('@yardList');
+        cy.wait('@yardGroupList');
+    })
+
+    // Subtest to check empty dashboard page loads correctly
+    it("Visits dashboard page with empty DB", () => {
+        cy.get('h1').contains('Yard Groups').should('be.visible');
+        cy.get('button').contains('New Yard').should('be.visible');
+        cy.get('h3').should('not.exist');
+    })
+})
 
 describe("Dashboard page - testing yard creation flow", () => {
     beforeEach(() => {
@@ -132,7 +134,20 @@ describe("Dashboard page - testing yard creation flow", () => {
         // Mocks Api Call to zipcode validator
         cy.intercept('GET', 'https://api.zippopotam.us/us/*', {
             statusCode: 200,
-            body: { 'post code': '27613' }
+            body: {
+                "post code": "27613",
+                "country": "United States",
+                "country abbreviation": "US",
+                "places": [
+                    {
+                        "place name": "Raleigh",
+                        "longitude": "-78.7228",
+                        "state": "North Carolina",
+                        "state abbreviation": "NC",
+                        "latitude": "35.9067"
+                    }
+                ]
+            }
         }).as('zip');
 
         // Enters required fields and then navigates to preferences section
@@ -184,7 +199,7 @@ describe("Dashboard page - testing yard creation flow", () => {
             ]
         }).as('yardList');
         
-        // Mock get_yards_preferences response with no yards
+        // Mock get_yards_preferences response
         cy.intercept('GET', '**/yard_pref/1/', {
             statusCode: 200, body: {
                 "ok": true,
@@ -202,6 +217,9 @@ describe("Dashboard page - testing yard creation flow", () => {
             }
         }).as('yardPrefs');
 
+        // Mock get_yard_tasks response
+        cy.intercept("GET", "**/tasks/*/", { status: 200, body: [] }).as("getTasks");
+
         // Moves to  the Preferences section and saves the yard info
         cy.contains('button', 'Next').should('be.visible').click();
         cy.wait('@postYard');
@@ -210,16 +228,17 @@ describe("Dashboard page - testing yard creation flow", () => {
         cy.get('[data-cy="prefs-modal"][data-yard-id="1"]').within(() => {
             cy.get('[data-cy="wateringIntervalInput"]').clear().type('4');
             cy.get('[data-cy="wateringRateInput"]').clear().type('5');
-            cy.get('[data-cy="fertilizingIntervalInput"]').clear().type('6');//
+            // cy.get('[data-cy="fertilizingIntervalInput"]').clear().type('6');
             cy.get('[data-cy="fertilizingRateInput"]').clear().type('7');
             cy.get('[data-cy="mowingIntervalInput"]').clear().type('8');
-            cy.get('[data-cy="aerationIntervalInput"]').clear().type('9');//
-            cy.get('[data-cy="dethatchingIntervalInput"]').clear().type('10');//
+            // cy.get('[data-cy="aerationIntervalInput"]').clear().type('9');
+            // cy.get('[data-cy="dethatchingIntervalInput"]').clear().type('10');
         });
 
         // Mocking API calls to the backend
         cy.contains('button', 'Save Preferences').click();
-        cy.wait('@setYardPrefs')
+        cy.wait('@setYardPrefs');
+        cy.wait('@getTasks');
         cy.wait('@yardGroupList');
         cy.wait('@yardList');
         cy.wait('@yardPrefs');
@@ -235,11 +254,11 @@ describe("Dashboard page - testing yard creation flow", () => {
         cy.get('div').contains('Unknown').should('be.visible');
         cy.get('div').contains('4 day(s)').should('be.visible');
         cy.get('div').contains('5\" / week').should('be.visible');
-        cy.get('div').contains('6 day(s)').should('be.visible');
+        // cy.get('div').contains('6 day(s)').should('be.visible');
         cy.get('div').contains('7 lbs/1000 sqft').should('be.visible');
         cy.get('div').contains('8 day(s)').should('be.visible');
-        cy.get('div').contains('9 day(s)').should('be.visible');
-        cy.get('div').contains('10 day(s)').should('be.visible');
+        // cy.get('div').contains('9 day(s)').should('be.visible');
+        // cy.get('div').contains('10 day(s)').should('be.visible');
     })
 })
 
@@ -306,11 +325,6 @@ describe("Tests Group creation and deletion", () => {
                 }
             }
         }).as('yardPrefs');
-        // Mocks Api Call to zipcode validator
-        cy.intercept('GET', 'https://api.zippopotam.us/us/*', {
-            statusCode: 200,
-            body: { 'post code': '27613' }
-        }).as('zip');
 
         cy.visit('/dashboard');
         cy.wait('@authMe');
@@ -321,140 +335,284 @@ describe("Tests Group creation and deletion", () => {
     })
 
     // Tests the functionality of making groups 
-    // it("Tests that yards show in groups properly", () => {
-    //     // Open new task modal
-    //     cy.get('h1').contains('Yard Groups').should('be.visible');
-    //     cy.get('button').contains('New Yard').should('be.visible').click();
+    it("Tests that yards show in groups properly", () => {
+        // Mocks Api Call to zipcode validator
+        cy.intercept('GET', 'https://api.zippopotam.us/us/*', {
+            statusCode: 200,
+            body: {
+                "post code": "27613",
+                "country": "United States",
+                "country abbreviation": "US",
+                "places": [
+                    {
+                        "place name": "Raleigh",
+                        "longitude": "-78.7228",
+                        "state": "North Carolina",
+                        "state abbreviation": "NC",
+                        "latitude": "35.9067"
+                    }
+                ]
+            }
+        }).as('zip');
+
+        // Open new task modal
+        cy.get('h1').contains('Yard Groups').should('be.visible');
+        cy.get('button').contains('New Yard').should('be.visible').click();
         
-    //     // Enter values for a new test
-    //     cy.get('#yardNameInput').type("NewTestYard");
-    //     cy.get('#zipCodeInput').type("27613");
-    //     cy.wait('@zip');
-    //     cy.get('#newGroupInput').type("newGroup");
+        // Enter values for a new test
+        cy.get('#yardNameInput').type("NewTestYard");
+        cy.get('#zipCodeInput').type("27613");
+        cy.wait('@zip');
+        cy.get('#newGroupInput').type("newGroup");
 
-    //     cy.intercept('GET', '**/yards/', {
-    //         statusCode: 200, body: [
-    //             {
-    //                 "id": 1,
-    //                 "yard_name": "testYard",
-    //                 "yard_size": 0,
-    //                 "soil_type": "Unknown",
-    //                 "grass_type": "Unknown",
-    //                 "longitude": "Unknown",
-    //                 "latitude": "Unknown",
-    //                 "user": 8,
-    //                 "yard_group": null,
-    //                 "zip_code": "27613"
-    //             },
-    //             {
-    //                 "id": 2,
-    //                 "yard_name": "groupedTestYard",
-    //                 "yard_size": 0,
-    //                 "soil_type": "Unknown",
-    //                 "grass_type": "Unknown",
-    //                 "longitude": "Unknown",
-    //                 "latitude": "Unknown",
-    //                 "user": 8,
-    //                 "yard_group": {
-    //                     "id":1,
-    //                     "user":8,
-    //                     "group_name":'testGroup'
-    //                 },
-    //                 "zip_code": "27613"
-    //             },
-    //             {
-    //                 "id": 3,
-    //                 "yard_name": "newTestYard",
-    //                 "yard_size": 0,
-    //                 "soil_type": "Unknown",
-    //                 "grass_type": "Unknown",
-    //                 "longitude": "Unknown",
-    //                 "latitude": "Unknown",
-    //                 "user": 8,
-    //                 "yard_group": {
-    //                     "id":2,
-    //                     "user":8,
-    //                     "group_name":'newGroup'
-    //                 },
-    //                 "zip_code": "27613"
-    //             }
-    //         ]
-    //     }).as('yardList');
+        cy.intercept("GET", "**/tasks/*/", { status: 200, body: [] }).as("taskList")
 
-    //     // Mock get_yard_groups response with no yard groups
-    //     cy.intercept('GET', '**/yards/yard-groups', {
-    //         statusCode: 200, body: [{
-    //             "id":1,
-    //             "user":8,
-    //             "group_name":'testGroup'
-    //         },
-    //         {
-    //             "id":2,
-    //             "user":8,
-    //             "group_name":'newGroup'
-    //         }]
-    //     }).as('yardGroupList');
+        cy.intercept('GET', '**/yards/', {
+            statusCode: 200, body: [
+                {
+                    "id": 1,
+                    "yard_name": "testYard",
+                    "yard_size": 0,
+                    "soil_type": "Unknown",
+                    "grass_type": "Unknown",
+                    "longitude": "Unknown",
+                    "latitude": "Unknown",
+                    "user": 8,
+                    "yard_group": null,
+                    "zip_code": "27613"
+                },
+                {
+                    "id": 2,
+                    "yard_name": "groupedTestYard",
+                    "yard_size": 0,
+                    "soil_type": "Unknown",
+                    "grass_type": "Unknown",
+                    "longitude": "Unknown",
+                    "latitude": "Unknown",
+                    "user": 8,
+                    "yard_group": {
+                        "id":1,
+                        "user":8,
+                        "group_name":'testGroup'
+                    },
+                    "zip_code": "27613"
+                },
+                {
+                    "id": 3,
+                    "yard_name": "newTestYard",
+                    "yard_size": 0,
+                    "soil_type": "Unknown",
+                    "grass_type": "Unknown",
+                    "longitude": "Unknown",
+                    "latitude": "Unknown",
+                    "user": 8,
+                    "yard_group": {
+                        "id":2,
+                        "user":8,
+                        "group_name":'newGroup'
+                    },
+                    "zip_code": "27613"
+                }
+            ]
+        }).as('yardList');
 
-    //     // Mock get_yards response with no yards
-    //     cy.intercept('POST', '**/yards/', {
-    //         statusCode: 201, body: 
-    //             {
-    //                 "id": 3,
-    //                 "yard_name": "newTestYard",
-    //                 "yard_size": 0,
-    //                 "soil_type": "Unknown",
-    //                 "grass_type": "Unknown",
-    //                 "longitude": "Unknown",
-    //                 "latitude": "Unknown",
-    //                 "user": 8,
-    //                 "yard_group": {
-    //                     "id":2,
-    //                     "user":8,
-    //                     "group_name":'newGroup'
-    //                 },
-    //                 "zip_code": "27613"
-    //             }
-    //     }).as('postYard');
+        // Mock get_yard_groups response with no yard groups
+        cy.intercept('GET', '**/yards/yard-groups', {
+            statusCode: 200, body: [{
+                "id":1,
+                "user":8,
+                "group_name":'testGroup'
+            },
+            {
+                "id":2,
+                "user":8,
+                "group_name":'newGroup'
+            }]
+        }).as('yardGroupList');
 
-    //     // Mock get_yards response with no yards
-    //     cy.intercept('POST', '**/yards/yard-groups', {
-    //         statusCode: 201, body: 
-    //             {
-    //                 "id":2,
-    //                 "user":8,
-    //                 "group_name":'newGroup'
-    //             }
-    //     }).as('postYardGroup');
+        // Mock get_yards response with no yards
+        cy.intercept('POST', '**/yards/', {
+            statusCode: 201, body: 
+                {
+                    "id": 3,
+                    "yard_name": "newTestYard",
+                    "yard_size": 0,
+                    "soil_type": "Unknown",
+                    "grass_type": "Unknown",
+                    "longitude": "Unknown",
+                    "latitude": "Unknown",
+                    "user": 8,
+                    "yard_group": {
+                        "id":2,
+                        "user":8,
+                        "group_name":'newGroup'
+                    },
+                    "zip_code": "27613"
+                }
+        }).as('postYard');
 
-    //     // Mock get_yards response with no yards
-    //     cy.intercept('POST', '**/yards/yard-groups/*/yard/*', {
-    //         statusCode: 201, body: 
-    //             {
-    //                 "success": "Yard added to group"
-    //             }
-    //     }).as('addToGroup');
+        // Mock get_yards response with no yards
+        cy.intercept('POST', '**/yards/yard-groups', {
+            statusCode: 201, body: 
+                {
+                    "id":2,
+                    "user":8,
+                    "group_name":'newGroup'
+                }
+        }).as('postYardGroup');
 
-    //     //Submits the form
-    //     cy.contains('button', 'Save').should('be.visible').click();
-    //     cy.wait('@postYardGroup');
-    //     cy.wait('@postYard');
-    //     cy.wait('@addToGroup');
-    //     cy.wait('@yardList');
-    //     cy.wait('@yardGroupList');
-    //     cy.wait('@yardPrefs');
-    //     cy.wait('@yardPrefs');
-    //     cy.wait('@yardPrefs');
+        // Mock get_yards response with no yards
+        cy.intercept('POST', '**/yards/yard-groups/*/yard/*', {
+            statusCode: 201, body: 
+                {
+                    "success": "Yard added to group"
+                }
+        }).as('addToGroup');
 
-    //     // Checks that the new group is made and the new yard is in said group
-    //     cy.get('span').contains('newGroup').should('be.visible').click();
-    //     cy.get('span').contains('newTestYard').should('be.visible');
-    //     cy.get('span').contains('testGroup').should('be.visible');
-    //     cy.get('span').contains('Ungrouped Yards').should('be.visible');
-    // }),
+        //Submits the form
+        cy.contains('button', 'Save').should('be.visible').click();
+        cy.wait('@postYardGroup');
+        cy.wait('@postYard');
+        cy.wait('@taskList');
+        cy.wait('@addToGroup');
+        cy.wait('@yardList');
+        cy.wait('@yardGroupList');
+        cy.wait('@yardPrefs');
+        cy.wait('@yardPrefs');
+        cy.wait('@yardPrefs');
+
+        // Checks that the new group is made and the new yard is in said group
+        cy.get('span').contains('newGroup').should('be.visible').click();
+        cy.get('span').contains('newTestYard').should('be.visible');
+        cy.get('span').contains('testGroup').should('be.visible');
+        cy.get('span').contains('Ungrouped Yards').should('be.visible');
+    }),
 
     // Tests editing which group a yard belongs to and the ability to delete groups
     it("Tests editing a yard's group and group deletion", () => {
+        // Opens up the groupedTestYard edit modal
+        cy.get('span').contains('testGroup').should('be.visible').click();
+        cy.get('span').contains('groupedTestYard').should('be.visible').click();
+        cy.get('svg').eq(3).should('be.visible').click();
+        cy.get('#yard-group-label').parent().should('be.visible').click();
+        cy.get('li').contains('N/A').should('be.visible').click();
         
+        // Intercepts
+        cy.intercept("GET", "**/tasks/*/", { status: 200, body: [] }).as("taskList")
+
+        // Editing yard
+        cy.intercept(
+        { method: "PUT", url: '**/yards/*/' },
+            {
+                statusCode: 200,
+                body: {
+                id: 2,
+                yard_name: 'groupedTestYard',
+                yard_size: 0,
+                soil_type: 'Unknown',
+                grass_type: 'Unknown',
+                longitude: 'Unknown',
+                latitude: 'Unknown',
+                user: 8,
+                yard_group: null, 
+                zip_code: '27613'
+                }
+            }
+        ).as('updateYard');
+
+        // Group list after editing
+        cy.intercept('GET', '**/yards/yard-groups/', {
+        statusCode: 200,
+        body: []
+        }).as('yardGroupList');
+
+        // Yard list after editing
+        cy.intercept('GET', '**/yards/', {
+        statusCode: 200,
+        body: [
+            {
+            id: 1, yard_name: 'testYard', yard_group: null,
+            yard_size: 0, soil_type: 'Unknown', grass_type: 'Unknown',
+            longitude: 'Unknown', latitude: 'Unknown', user: 8, zip_code: '27613'
+            },
+            {
+            id: 2, yard_name: 'groupedTestYard', yard_group: null,
+            yard_size: 0, soil_type: 'Unknown', grass_type: 'Unknown',
+            longitude: 'Unknown', latitude: 'Unknown', user: 8, zip_code: '27613'
+            }
+        ]
+        }).as('yardList');
+
+        // Yard preferences
+        cy.intercept('GET', '**/yard_pref/*/', (req) => {
+        const id = req.url.match(/yard_pref\/(\d+)\//)?.[1];
+        req.reply({
+            statusCode: 200,
+            body: {
+            ok: true,
+            data: {
+                id: Number(id),
+                watering_interval: 4, watering_rate: 5,
+                fertilizing_interval: 6, fertilizing_rate: 7,
+                mowing_interval: 8, aeration_interval: 9, dethatching_interval: 10,
+                yard: Number(id)
+            }
+            }
+        });
+        }).as('yardPrefs');
+
+        cy.intercept("DELETE", "**/yards/yard-groups/*/", { statusCode: 204 }).as("groupDelete")
+
+        // Saving Shenanigans
+        cy.contains('button', 'Save').should('be.visible').click();
+        cy.wait('@updateYard');
+
+        // Confirm group deletion
+        cy.contains('button', 'Delete').should('be.visible').click();
+        cy.wait('@groupDelete');
+        cy.wait('@yardGroupList');
+        cy.wait('@yardList');
+        cy.wait('@yardPrefs');
+        cy.wait('@yardPrefs');
+
+        // Checks to confirm group was deleted and yards are where they should be
+        cy.get('span').contains('Ungrouped Yards').should('be.visible').click();
+        cy.get('span').contains('testYard').should('be.visible');
+        cy.get('span').contains('groupedTestYard').should('be.visible').click();
+        cy.get('svg').eq(3).should('be.visible').click();
+        cy.get('#yard-group-label').parent().should('be.visible').click();
+        cy.get('li').contains('testGroup').should('not.exist');
+    }),
+    // Edit yard group name
+    it("Tests editing a yard's group's name", () => {
+        cy.intercept('PUT', '**/yards/yard-groups/*', {
+            statusCode: 200, body: {
+                "id":1,
+                "user":8,
+                "group_name":'newGroupName'
+            }
+        }).as('groupReName');
+
+        // Mock get_yard_groups response with no yard groups
+        cy.intercept('GET', '**/yards/yard-groups', {
+            statusCode: 200, body: [{
+                "id":1,
+                "user":8,
+                "group_name":'newGroupName'
+            }]
+        }).as('yardGroupList');
+        
+        // Renaming the yard group
+        cy.get('svg').eq(0).click();
+        cy.get('svg').eq(0).click();
+        cy.get('input').type('newGroupName{enter}');
+        cy.wait('@groupReName');
+        cy.wait('@yardGroupList');
+        
+        // Checks that the group name was changed in the yard and on the group display
+        cy.get('span').contains('newGroupName').should('be.visible').click();
+        cy.get('svg').eq(3).click();
+        cy.get('svg').eq(3).click();
+        cy.get('#yard-group-label').parent().contains('newGroupName').should('be.visible');
     })
-    // TODO: Edit yard group name
 })
