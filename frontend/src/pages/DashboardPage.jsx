@@ -104,11 +104,6 @@ export default function Dashboard() { // TODO: need to change display of yard pr
     }
   };
 
-  const handlePreferencesSaved = () => {
-    handleYardCreated();
-    setIsNewYard(false);
-  };
-
   const handleDeleteClick = (yardId) => {
     setSelectedYardId(yardId);
     setConfirmOpen(true);
