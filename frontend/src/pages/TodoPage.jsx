@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState} from "react";
 import { getYardList, getTaskForYard, updateTask, deleteTask } from "../Api";
 import CustomAccordion from "../components/MUIAccordion";
 import Button from "@mui/material/Button";
@@ -54,7 +54,7 @@ export default function Todo() { // TODO: label scheduled column. display comple
   return (
     <div className="flex flex-col items-center px-4 sm:px-8 md:px-16 lg:px-24">
       <h1 className="text-2xl font-bold mb-2 text-center">To-Do List</h1>
-      <div className="flex flex-col gap-4 w-full max-w-2xl mt-4">
+      <div className="flex flex-col gap-4 w-full mx-auto mt-4">
         {yards.map((yard) => {
           const tasks = tasksByYard[yard.id] || [];
 
