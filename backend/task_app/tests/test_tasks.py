@@ -21,19 +21,28 @@ class TaskAPITests(TestCase):
         resp = self.client.post(reverse("task-add", args=[yard.id]), payload)
         self.assertEqual(resp.status_code, 201)
         task_id = resp.data["id"]
+        expected = {
+            "id": task_id,
+            "activity_type": "Mow",
+            "day_scheduled": date.today().isoformat(),
+            "day_completed": None,
+            "yard": yard.id,
+            "auto_generated": False,
+        }
+        self.assertEqual(resp.data, expected)
         resp = self.client.get(reverse("task-detail", args=[task_id]))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.data["activity_type"], "Mow")
+        self.assertEqual(resp.data, expected)
 
     def test_due_and_completed_view(self):
         user = User.objects.create_user(email="t2@t.com", password="pw")
         yard = Yard.objects.create(user=user, yard_name="Back")
         self.client.force_authenticate(user)
-        self.client.post(
+        upcoming_resp = self.client.post(
             reverse("task-add", args=[yard.id]),
             {"activity_type": "Mow", "day_scheduled": date.today() + timedelta(days=1)},
         )
-        self.client.post(
+        recent_resp = self.client.post(
             reverse("task-add", args=[yard.id]),
             {
                 "activity_type": "Water",
@@ -43,8 +52,29 @@ class TaskAPITests(TestCase):
         )
         resp = self.client.get(reverse("task-due-and-completed", args=[yard.id]))
         self.assertEqual(resp.status_code, 200)
-        self.assertIn("upcoming_tasks", resp.data)
-        self.assertIn("recent_tasks", resp.data)
+        expected = {
+            "upcoming_tasks": [
+                {
+                    "id": upcoming_resp.data["id"],
+                    "activity_type": "Mow",
+                    "day_scheduled": (date.today() + timedelta(days=1)).isoformat(),
+                    "day_completed": None,
+                    "yard": yard.id,
+                    "auto_generated": False,
+                }
+            ],
+            "recent_tasks": [
+                {
+                    "id": recent_resp.data["id"],
+                    "activity_type": "Water",
+                    "day_scheduled": date.today().isoformat(),
+                    "day_completed": date.today().isoformat(),
+                    "yard": yard.id,
+                    "auto_generated": False,
+                }
+            ],
+        }
+        self.assertEqual(resp.data, expected)
 
     def test_update_task(self):
         user = User.objects.create_user(email="t3@t.com", password="pw")
@@ -61,7 +91,15 @@ class TaskAPITests(TestCase):
             {"activity_type": "Trim"},
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.data["activity_type"], "Trim")
+        expected = {
+            "id": task_id,
+            "activity_type": "Trim",
+            "day_scheduled": date.today().isoformat(),
+            "day_completed": None,
+            "yard": yard.id,
+            "auto_generated": False,
+        }
+        self.assertEqual(resp.data, expected)
 
     def test_delete_task(self):
         user = User.objects.create_user(email="t4@t.com", password="pw")
@@ -77,3 +115,4 @@ class TaskAPITests(TestCase):
         self.assertEqual(resp.status_code, 204)
         resp = self.client.get(reverse("task-detail", args=[task_id]))
         self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.data, {"error": "Task not found"})

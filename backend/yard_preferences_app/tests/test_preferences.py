@@ -15,7 +15,21 @@ def test_get_creates_default_preferences(db):
     client.force_authenticate(user)
     resp = client.get(reverse("yard-preferences", args=[yard.id]))
     assert resp.status_code == 200
-    assert resp.data["ok"] is True
+    expected = {
+        "ok": True,
+        "data": {
+            "id": resp.data["data"]["id"],
+            "yard": yard.id,
+            "watering_interval": 2.0,
+            "fertilizing_interval": 90,
+            "mowing_interval": 7,
+            "aeration_interval": 180,
+            "dethatching_interval": 180,
+            "watering_rate": 2.0,
+            "fertilizing_rate": 1.0,
+        },
+    }
+    assert resp.data == expected
 
 
 def test_post_updates_preferences(db):
@@ -27,6 +41,29 @@ def test_post_updates_preferences(db):
         {"watering_interval": 3.5},
     )
     assert resp.status_code == 201
+    assert resp.data == {"ok": True, "detail": "Preferences created"}
+    resp = client.post(
+        reverse("yard-preferences", args=[yard.id]),
+        {"watering_interval": 4.0},
+    )
+    assert resp.status_code == 200
+    assert resp.data == {"ok": True, "detail": "Preferences updates"}
+    resp = client.get(reverse("yard-preferences", args=[yard.id]))
+    expected = {
+        "ok": True,
+        "data": {
+            "id": resp.data["data"]["id"],
+            "yard": yard.id,
+            "watering_interval": 4.0,
+            "fertilizing_interval": 90,
+            "mowing_interval": 7,
+            "aeration_interval": 180,
+            "dethatching_interval": 180,
+            "watering_rate": 2.0,
+            "fertilizing_rate": 1.0,
+        },
+    }
+    assert resp.data == expected
 
 
 def test_get_returns_404_for_other_users_yard(db):
@@ -36,6 +73,10 @@ def test_get_returns_404_for_other_users_yard(db):
     client.force_authenticate(user)
     resp = client.get(reverse("yard-preferences", args=[yard.id]))
     assert resp.status_code == 404
+    assert resp.data == {
+        "ok": False,
+        "detail": f"No yard {yard.id} found for user {user.id}",
+    }
 
 
 def test_post_returns_404_for_other_users_yard(db):
@@ -48,3 +89,7 @@ def test_post_returns_404_for_other_users_yard(db):
         {"watering_interval": 3},
     )
     assert resp.status_code == 404
+    assert resp.data == {
+        "ok": False,
+        "detail": f"No yard {yard.id} found for user {user.id}",
+    }
