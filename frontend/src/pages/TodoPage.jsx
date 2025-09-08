@@ -181,7 +181,13 @@ export default function Todo() {
                     />
 
                     {/* Task name (fills space between checkbox and dates) */}
-                    <span className="truncate flex-1">{t.activity_type}</span>
+                    <span
+                      className={`truncate flex-1 ${
+                        t.auto_generated ? "underline" : ""
+                      }`}
+                    >
+                      {t.activity_type}
+                    </span>
 
                     {/* Scheduled + Completed (exact width) */}
                     <span className="text-right font-mono w-[5ch]">
@@ -284,7 +290,9 @@ export default function Todo() {
                     />
 
                     {/* Task name (fills space between checkbox and dates) */}
-                    <span className="truncate flex-1 ml-0">
+                    <span className={`truncate flex-1 ${
+                        t.auto_generated ? "underline" : ""
+                      }`}>
                       {t.activity_type}
                     </span>
 
