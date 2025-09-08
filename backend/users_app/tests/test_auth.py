@@ -17,6 +17,7 @@ def test_signup_creates_user(db):
         reverse("users_app:SignUp"), {"email": "a@a.com", "password": "pw"}
     )
     assert resp.status_code == 201
+    assert resp.json() == {"email": "a@a.com"}
     assert User.objects.filter(email="a@a.com").exists()
 
 
@@ -26,6 +27,7 @@ def test_login_sets_cookie(db, client):
         reverse("users_app:Login"), {"email": "b@b.com", "password": "pw"}
     )
     assert resp.status_code == 200
+    assert resp.json() == {"email": "b@b.com", "detail": "login successful"}
     assert "auth_token" in resp.cookies
 
 
@@ -34,12 +36,14 @@ def test_logout_removes_cookie(db, client):
     client.force_authenticate(user=user)
     resp = client.post(reverse("users_app:Logout"))
     assert resp.status_code == 204
+    assert resp.data is None
     assert "auth_token" not in resp.cookies
 
 
 def test_info_requires_auth(db, client):
     resp = client.get(reverse("users_app:Info"))
     assert resp.status_code == 401
+    assert resp.json() == {"detail": "Authentication credentials were not provided."}
 
 
 def test_info_returns_user_details(db, client):
