@@ -68,9 +68,9 @@ export const logoutUser = async () => {
 };
 
 // Updates a user's info with a given payload
-export const updateUserInfo = async (yard_id) => {
+export const updateUserInfo = async (payload) => {
   try {
-    const res = await api.post(`users/info/${yard_id}/`);
+    const res = await api.post("users/info/", payload);
     return res.data; // {"email": user.email, "is_super": user.is_superuser}, 200
   } catch (err) {
     throw err;
@@ -316,9 +316,9 @@ export const getTips = async (yard_id) => {
 };
 
 // Creates the tips for a given yard
-export const CreateTips = async (yard_id, payload) => {
+export const CreateTips = async (yard_id) => {
   try {
-    const res = await api.post(`tips/${yard_id}/`, payload);
+    const res = await api.post(`tips/${yard_id}/`);
     return res.data; // no body, 204
   } catch (err) {
     throw err;
