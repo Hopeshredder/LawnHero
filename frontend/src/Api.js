@@ -67,11 +67,11 @@ export const logoutUser = async () => {
   }
 };
 
-// Logs a user out
-export const updateUserInfo = async (payload) => {
+// Updates a user's info with a given payload
+export const updateUserInfo = async (yard_id) => {
   try {
-    await api.post("users/info/", payload);
-    return null; // {"email": user.email, "is_super": user.is_superuser}, 200
+    const res = await api.post(`users/info/${yard_id}/`);
+    return res.data; // {"email": user.email, "is_super": user.is_superuser}, 200
   } catch (err) {
     throw err;
   }
