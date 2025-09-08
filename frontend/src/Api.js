@@ -67,6 +67,16 @@ export const logoutUser = async () => {
   }
 };
 
+// Updates a user's info with a given payload
+export const updateUserInfo = async (payload) => {
+  try {
+    const res = await api.post("users/info/", payload);
+    return res.data; // {"email": user.email, "is_super": user.is_superuser}, 200
+  } catch (err) {
+    throw err;
+  }
+};
+
 /* ------------------------   Yard Object Interaction   ----------------------- */
 
 // Creates a yard object with the given information
@@ -291,5 +301,26 @@ export const fetchLatLonFromZip = async (zipCode) => {
     };
   } catch (err) {
     throw new Error("Could not fetch coordinates for ZIP");
+  }
+};
+
+/* -----------------------   Tips Object Interaction   ------------------------ */
+// Gets the tips for a given yard
+export const getTips = async (yard_id) => {
+  try {
+    const res = await api.get(`tips/${yard_id}/`);
+    return res.data; //{ "watering": "supertip", "tools": "...", "yard_problems": "...", "mowing": "...", "fertilizing": "...", "aerating": "...", "detatching": "..." }, 200
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Creates the tips for a given yard
+export const CreateTips = async (yard_id) => {
+  try {
+    const res = await api.post(`tips/${yard_id}/`);
+    return res.data; // no body, 204
+  } catch (err) {
+    throw err;
   }
 };
