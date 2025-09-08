@@ -488,6 +488,7 @@ describe("Tests Group creation and deletion", () => {
         // Opens up the groupedTestYard edit modal
         cy.get('span').contains('testGroup').should('be.visible').click();
         cy.get('span').contains('groupedTestYard').should('be.visible').click();
+        // This references the edit button on a yard (when the page is expanded as it is above)
         cy.get('svg').eq(3).should('be.visible').click();
         cy.get('#yard-group-label').parent().should('be.visible').click();
         cy.get('li').contains('N/A').should('be.visible').click();
@@ -574,6 +575,7 @@ describe("Tests Group creation and deletion", () => {
         cy.get('span').contains('Ungrouped Yards').should('be.visible').click();
         cy.get('span').contains('testYard').should('be.visible');
         cy.get('span').contains('groupedTestYard').should('be.visible').click();
+        // This references the edit button on a yard (when the page is expanded as it is above)
         cy.get('svg').eq(3).should('be.visible').click();
         cy.get('#yard-group-label').parent().should('be.visible').click();
         cy.get('li').contains('testGroup').should('not.exist');
@@ -598,7 +600,9 @@ describe("Tests Group creation and deletion", () => {
         }).as('yardGroupList');
         
         // Renaming the yard group
+        // This references the first dropdown box (for the first named group)
         cy.get('svg').eq(0).click();
+        // This references the edit icon for the first group
         cy.get('svg').eq(0).click();
         cy.get('input').type('newGroupName{enter}');
         cy.wait('@groupReName');
@@ -606,7 +610,9 @@ describe("Tests Group creation and deletion", () => {
         
         // Checks that the group name was changed in the yard and on the group display
         cy.get('span').contains('newGroupName').should('be.visible').click();
+        // This references the dropdown box for the yard inside the group
         cy.get('svg').eq(3).click();
+        // This references the edit button for the yard inside the group
         cy.get('svg').eq(3).click();
         cy.get('#yard-group-label').parent().contains('newGroupName').should('be.visible');
     })
