@@ -1,81 +1,55 @@
 import CustomAccordion from "../components/MUIAccordion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import SuperTipsYardAccordion from "../components/SuperTipsAccordion";
+import { getYardList } from "../Api";
 
 export default function SuperTips() {
-  const [search, setSearch] = useState("");
-  const [error, setError] = useState("");
+  const [yards, setYards] = useState([]);
 
-  const accordions = [
-    {
-      title: "Super Tip 1: Water Optimization Techniques",
-      content:
-        "Water less often for longer. Water in AM when coolest. Use low flow rate irrigation especially on slopes to avoid runoff.",
-    },
-    {
-      title: "Super Tip 2: Common Issues",
-      content:
-        "This is some sample content for accordion 2. You can replace it with your own text.",
-    },
-    {
-      title: "Super Tip 3: Pest and Disease Identification",
-      content:
-        "Another accordion body example. Consistent styling keeps things clean.",
-    },
-    {
-      title: "Super Tip 4: Placeholder",
-      content: "Last accordion with placeholder text. Styled per your theme.",
-    },
-  ];
+  useEffect(() => {
+    const fetchYards = async () => {
+      try {
+        const res = await getYardList();
+        setYards(res);
+      } catch (err) {
+        console.error("Failed to fetch yards:", err);
+      }
+    };
+    fetchYards();
+  }, []);
 
-  // filters accordions by search box text
-  const filteredAccordions = accordions.filter((item) =>
-    item.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const superTip1 = {
+    title: "Super Tip 1: Yard Creation",
+    content: `Welcome to the Yard Creation tool! This tool helps you set up your yard profile so that all Super Tips can be tailored specifically to your yard.
 
-  const handleSearch = () => {
-    setError("");
-    // add search functionality?
+      First, provide general information about your yard using the New Yard button on your Dashboard:
+      - **Zip code:** Enables climate and regional soil insights.
+      - **Soil type:** Helps determine watering, fertilizing, and aeration needs.
+      - **Grass type:** Allows tips to be specific to your turf.
+
+      Next, provide yard preferences:
+      - **Watering schedule and rate:** Helps optimize irrigation suggestions.
+      - **Mowing frequency:** Ensures mowing tips fit your routine.
+      - **Seasonal tasks:** Fertilizing, aeration, dethatching schedules can be integrated.
+
+      Finally, the more accurate and up-to-date the information, the more personalized your Super Tips will be. `,
   };
 
   return (
     <div className="px-4 sm:px-8 md:px-16 lg:px-24">
+      <h1 className="text-2xl font-bold mb-6 text-center">Super Tips</h1>
+      {superTip1 && (
+        <CustomAccordion title={superTip1.title} content={superTip1.content} />
+      )}
 
-      <br />
-      <div>
-        <input
-          type="search"
-          id="search"
-          placeholder="ex: watering techniques"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full p-3 rounded border border-var(--color-medium) bg-var(--color-light) text-var(--color-darkest) focus:outline-none focus:ring-2 focus:ring-var(--color-medium)"
-        />
-        <button
-          onClick={handleSearch}
-          className="w-full py-3 mt-2 rounded font-semibold transition duration-200"
-          style={{
-            backgroundColor: "var(--color-medium)",
-            color: "var(--color-lightest)",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "var(--color-dark)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "var(--color-medium)")
-          }
-        >
-          Search
-        </button>
-      </div>
-      <br />
-      {/* Render filtered accordions */}
-      <div className="space-y-4">
-        {filteredAccordions.length > 0 ? (
-          filteredAccordions.map((item, idx) => (
-            <CustomAccordion key={idx} title={item.title} content={item.content} />
+      <div className="space-y-4 mt-4">
+        {/* Map all yards */}
+        {yards.length > 0 ? (
+          yards.map((yard) => (
+            <SuperTipsYardAccordion key={yard.id} yard={yard} />
           ))
         ) : (
-          <p>{error || "No tips found."}</p>
+          <p>Loading yards...</p>
         )}
       </div>
     </div>

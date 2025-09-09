@@ -13,7 +13,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import PreferencesModal from "../components/PreferencesModal";
 import GroupAccordion from "../components/GroupAccordion";
 
-export default function Dashboard() { // need to change display of yard prefs given new method, persist dates and new prefs on backend
+export default function Dashboard() { // TODO: need to change display of yard prefs given new method, persist dates and new prefs on backend
   const [yards, setYards] = useState([]);
   const [groups, setGroups] = useState([]);
   const [prefsByYard, setPrefsByYard] = useState({});
@@ -102,11 +102,6 @@ export default function Dashboard() { // need to change display of yard prefs gi
     } else {
       setIsNewYard(false);
     }
-  };
-
-  const handlePreferencesSaved = () => {
-    handleYardCreated();
-    setIsNewYard(false);
   };
 
   const handleDeleteClick = (yardId) => {

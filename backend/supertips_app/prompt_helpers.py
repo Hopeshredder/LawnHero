@@ -1,6 +1,5 @@
 import re
 
-
 def build_user_prompt(payload: dict):
     # FROM YARD INFO
     yard_name = payload["yard_name"]
@@ -45,13 +44,12 @@ def build_user_prompt(payload: dict):
         "No markdown. No specific tool manufacturers."
     )
 
-
 def parse_supertips(text: str) -> dict:
     # Normalize whitespace/newlines
     t = (text or "").replace("\r\n", "\n").replace("\r", "\n").strip()
 
-    # Matches lines like "1. Watering:" or "Tools/Equipment:" (case-insensitive)
-    header_re = re.compile(r"(?mi)^\s*(?:\d+\.\s*)?([A-Za-z/ ]+)\s*:\s*$")
+    # Regex matches headers like "Watering:" or "Tools/Equipment:" with optional inline content
+    header_re = re.compile(r"(?mi)^(?:\d+\.\s*)?([A-Za-z/ ]+)\s*:\s*(.*)")
 
     def to_key(label: str) -> str | None:
         label = (label or "").strip().lower()
@@ -80,7 +78,7 @@ def parse_supertips(text: str) -> dict:
         "dethatching": "",
     }
 
-    # Find all headers and slice content between them
+    # Find all headers
     matches = list(header_re.finditer(t))
     if not matches:
         return result  # Nothing matched; return empties
@@ -88,14 +86,23 @@ def parse_supertips(text: str) -> dict:
     for i, m in enumerate(matches):
         label = m.group(1)
         key = to_key(label)
+        
+        # Capture inline content after colon
+        inline_text = m.group(2).strip()
+        
+        # Capture everything until the next header
         start = m.end()
         end = matches[i + 1].start() if i + 1 < len(matches) else len(t)
-        content = t[start:end].strip()
-
-        # Optional: collapse excess blank lines
-        content = re.sub(r"\n{3,}", "\n\n", content)
+        remaining_text = t[start:end].strip()
+        
+        # Combine inline text and remaining text
+        content = (inline_text + " " + remaining_text).strip()
+        
+        # Collapse multiple newlines
+        content = re.sub(r"\n{2,}", "\n\n", content)
 
         if key:
             result[key] = content
 
     return result
+

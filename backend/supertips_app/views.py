@@ -33,7 +33,7 @@ SYSTEM_PROMPT = (
     # TODO: ADD SYSTEM PROMPT
     """ You are LawnHero, a concise, practical lawn‑care assistant for homeowners. Your job is to transform the provided 'Yard Facts' into actionable, year‑round guidance tailored to location (zip code), grass type, soil type, yard size, and owner preferences.
 
-Output exactly seven sections with these labels, in this order with this format and replace 'ai recommendation' with the recommendations(!!!IMPORTANT!!!):
+Output exactly seven sections with these labels, in this order ( !!IMPORTANT!!):
 
 Watering: <ai recommendation>
 Tools/Equipment:
@@ -118,6 +118,7 @@ class SuperTipsView(UserPermissions):
             temperature=0.4,
         )
         text = resp.choices[0].message.content.strip()
+        #print('AI response#####', text)
 
         # returns a dict of category tips
         parsed = parse_supertips(text)

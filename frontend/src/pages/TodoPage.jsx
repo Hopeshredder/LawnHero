@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { getYardList, getTaskForYard, updateTask, deleteTask } from "../Api";
 import CustomAccordion from "../components/MUIAccordion";
 import Button from "@mui/material/Button";
@@ -8,7 +8,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
-export default function Todo() { // label scheduled column. display completed date and label column. allow filtering and sorting
+export default function Todo() {
+  // TODO:  allow filtering and sorting. add on hover/click full name display if cut off
   const [yards, setYards] = useState([]);
   const [tasksByYard, setTasksByYard] = useState({});
   const [openModal, setOpenModal] = useState(false);
@@ -54,7 +55,7 @@ export default function Todo() { // label scheduled column. display completed da
   return (
     <div className="flex flex-col items-center px-4 sm:px-8 md:px-16 lg:px-24">
       <h1 className="text-2xl font-bold mb-2 text-center">To-Do List</h1>
-      <div className="flex flex-col gap-4 w-full max-w-2xl mt-4">
+      <div className="flex flex-col gap-4 w-full mx-auto mt-4">
         {yards.map((yard) => {
           const tasks = tasksByYard[yard.id] || [];
 
@@ -105,14 +106,6 @@ export default function Todo() { // label scheduled column. display completed da
                         <AddCircleOutlineIcon />
                         New Task
                       </span>
-                      {/* <span className="text-center">—</span>
-                      <span className="text-right">
-                        Today{" "}
-                        {new Date().toLocaleDateString("en-US", {
-                          month: "numeric",
-                          day: "numeric",
-                        })}
-                      </span> */}
                     </div>
                   </Button>
                   {tasks.filter((t) => t.day_scheduled >= today).length >
@@ -131,6 +124,17 @@ export default function Todo() { // label scheduled column. display completed da
                   )}
                 </div>
               )}
+              <div
+                className="flex items-center p-2 mb-1 font-semibold text-sm border rounded shadow-sm"
+                style={{ backgroundColor: "var(--color-light)" }}
+              >
+                <div className="w-6"></div> {/* checkbox placeholder */}
+                <div className="flex-1">Task</div>
+                <div className="w-20 text-right">Scheduled</div>
+                <div className="w-20 text-right">Completed</div>
+                <div className="w-4"></div>
+              </div>
+
               {[...todayAndFuture].reverse().map((t) => {
                 return (
                   <div
@@ -176,16 +180,27 @@ export default function Todo() { // label scheduled column. display completed da
                       style={{ accentColor: "var(--color-medium)" }}
                     />
 
-                    {/* Activity + Date */}
-                    <div className="flex-1 flex items-center justify-between ml-2">
-                      <span className="truncate">{t.activity_type}</span>
-                      <span className="ml-2 flex-shrink-0">
-                        {t.day_scheduled.split("-").slice(1).join("/")}
-                      </span>
-                    </div>
+                    {/* Task name (fills space between checkbox and dates) */}
+                    <span
+                      className={`truncate flex-1 ${
+                        t.auto_generated ? "underline" : ""
+                      }`}
+                    >
+                      {t.activity_type}
+                    </span>
+
+                    {/* Scheduled + Completed (exact width) */}
+                    <span className="text-right font-mono w-[5ch]">
+                      {t.day_scheduled.split("-").slice(1).join("/")}
+                    </span>
+                    <span className="text-right font-mono w-[5ch]">
+                      {t.day_completed
+                        ? t.day_completed.split("-").slice(1).join("/")
+                        : ""}
+                    </span>
 
                     {/* Edit/Delete icons */}
-                    <div className="flex gap-2 ml-2 flex-shrink-0">
+                    <div className="flex gap-2 ml-1 flex-shrink-0">
                       <EditIcon
                         fontSize="small"
                         onClick={() => handleEditTask(t)}
@@ -211,7 +226,7 @@ export default function Todo() { // label scheduled column. display completed da
                 {/* Left: label */}
                 <div className="flex-1 flex items-center justify-between ml-2">
                   <span className="truncate font-semibold">Today</span>
-                  <span className="ml-2 flex-shrink-0">
+                  <span className="ml-2 flex-shrink-0 font-mono">
                     {new Date().toLocaleDateString("en-US", {
                       month: "2-digit",
                       day: "2-digit",
@@ -220,7 +235,7 @@ export default function Todo() { // label scheduled column. display completed da
                 </div>
 
                 {/* Placeholder for icons to keep date aligned */}
-                <div className="flex items-center ml-2 flex-shrink-0">
+                <div className="flex items-center ml-2 flex-shrink-0 mr-12">
                   <EditIcon style={{ visibility: "hidden" }} />
                   <DeleteForeverIcon style={{ visibility: "hidden" }} />
                 </div>
@@ -274,16 +289,25 @@ export default function Todo() { // label scheduled column. display completed da
                       style={{ accentColor: "var(--color-medium)" }}
                     />
 
-                    {/* Activity + Date */}
-                    <div className="flex-1 flex items-center justify-between ml-2">
-                      <span className="truncate">{t.activity_type}</span>
-                      <span className="ml-2 flex-shrink-0">
-                        {t.day_scheduled.split("-").slice(1).join("/")}
-                      </span>
-                    </div>
+                    {/* Task name (fills space between checkbox and dates) */}
+                    <span className={`truncate flex-1 ${
+                        t.auto_generated ? "underline" : ""
+                      }`}>
+                      {t.activity_type}
+                    </span>
+
+                    {/* Scheduled + Completed (exact width, monospace for alignment) */}
+                    <span className="text-right font-mono w-[5ch]">
+                      {t.day_scheduled.split("-").slice(1).join("/")}
+                    </span>
+                    <span className="text-right font-mono w-[5ch]">
+                      {t.day_completed
+                        ? t.day_completed.split("-").slice(1).join("/")
+                        : ""}
+                    </span>
 
                     {/* Edit/Delete icons */}
-                    <div className="flex gap-2 ml-2 flex-shrink-0">
+                    <div className="flex gap-2 ml-1 flex-shrink-0">
                       <EditIcon
                         fontSize="small"
                         onClick={() => handleEditTask(t)}
