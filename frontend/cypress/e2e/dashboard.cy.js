@@ -48,9 +48,7 @@ describe("Dashboard page - testing yard creation flow", () => {
     
     //  Make new yard with different yard values
     it("Creates a single yard with defaults", () => {
-        cy.get('#yardNameInput').type("TestYard");
-        cy.get('#zipCodeInput').type("27613");
-
+        
         // Mock get_yards response with no yards
         cy.intercept('POST', '**/yards/', {
             statusCode: 201, body: [
@@ -69,6 +67,28 @@ describe("Dashboard page - testing yard creation flow", () => {
             ]
         }).as('postYard');
 
+        // Mock get_yard_tasks response
+        cy.intercept("GET", "**/tasks/*/", { status: 200, body: [] }).as("getTasks");
+        
+        // Intercept Zip code API call
+        cy.intercept('GET', 'https://api.zippopotam.us/us/*', {
+            statusCode: 200,
+            body: {
+                "post code": "27613",
+                "country": "United States",
+                "country abbreviation": "US",
+                "places": [
+                    {
+                        "place name": "Raleigh",
+                        "longitude": "-78.7228",
+                        "state": "North Carolina",
+                        "state abbreviation": "NC",
+                        "latitude": "35.9067"
+                    }
+                ]
+            }
+        }).as('zip');
+        
         // Mock get_yards response with no yards
         cy.intercept('GET', '**/yards/', {
             statusCode: 200, body: [
@@ -86,9 +106,9 @@ describe("Dashboard page - testing yard creation flow", () => {
                 }
             ]
         }).as('yardList');
-
+        
         // Mock get_yards_preferences response with no yards
-        cy.intercept('GET', '**/yard_pref/1/', {
+        cy.intercept('GET', '**/yard_pref/*/', {
             statusCode: 200, body: {
                 "ok": true,
                 "data": {
@@ -104,14 +124,26 @@ describe("Dashboard page - testing yard creation flow", () => {
                 }
             }
         }).as('yardPrefs');
+        
+        // Mock AI API call
+        cy.intercept('POST', '**/tips/*/', {
+            statusCode: 200, body: {}
+        }).as('makeTips');
+        
+        
+        cy.get('#yardNameInput').type("TestYard");
+        cy.get('#zipCodeInput').type("27613");
+        cy.wait('@zip')
 
         // Mocking API calls to the backend
         cy.contains('button', 'Save').click();
         cy.wait('@postYard');
+        cy.wait('@yardPrefs');
+        cy.wait('@getTasks');
+        cy.wait('@makeTips');
         cy.wait('@yardList');
         cy.wait('@yardGroupList');
-        cy.wait('@yardPrefs');
-
+        
         // Opening accordions with tests
         cy.get('h3').contains('Ungrouped Yards').should('be.visible').click();
         cy.get('h3').contains('testYard').should('be.visible').click();
@@ -198,6 +230,11 @@ describe("Dashboard page - testing yard creation flow", () => {
                 }
             ]
         }).as('yardList');
+
+        // Mock AI API call
+        cy.intercept('POST', '**/tips/*/', {
+            statusCode: 200, body: {}
+        }).as('makeTips');
         
         // Mock get_yards_preferences response
         cy.intercept('GET', '**/yard_pref/1/', {
@@ -216,6 +253,11 @@ describe("Dashboard page - testing yard creation flow", () => {
                 }
             }
         }).as('yardPrefs');
+
+        // Mock AI API call
+        cy.intercept('POST', '**/tips/1/', {
+            statusCode: 200, body: {}
+        }).as('makeTips');
 
         // Mock get_yard_tasks response
         cy.intercept("GET", "**/tasks/*/", { status: 200, body: [] }).as("getTasks");
@@ -237,6 +279,7 @@ describe("Dashboard page - testing yard creation flow", () => {
         cy.contains('button', 'Save Preferences').click();
         cy.wait('@setYardPrefs');
         cy.wait('@getTasks');
+        cy.wait('@makeTips')
         cy.wait('@yardGroupList');
         cy.wait('@yardList');
         cy.wait('@yardPrefs');
@@ -320,6 +363,7 @@ describe("Tests Group creation and deletion", () => {
                 }
             }
         }).as('yardPrefs');
+        
 
         cy.visit('/dashboard');
         cy.wait('@authMe');
@@ -349,6 +393,11 @@ describe("Tests Group creation and deletion", () => {
                 ]
             }
         }).as('zip');
+
+        // Mock AI API call
+        cy.intercept('POST', '**/tips/*/', {
+            statusCode: 200, body: {}
+        }).as('makeTips');
 
         // Open new task modal
         cy.get('h1').contains('Yard Groups').should('be.visible');
@@ -469,6 +518,7 @@ describe("Tests Group creation and deletion", () => {
         cy.wait('@postYardGroup');
         cy.wait('@postYard');
         cy.wait('@taskList');
+        cy.wait('@makeTips');
         cy.wait('@addToGroup');
         cy.wait('@yardList');
         cy.wait('@yardGroupList');
@@ -515,6 +565,11 @@ describe("Tests Group creation and deletion", () => {
                 }
             }
         ).as('updateYard');
+
+        // Mock AI API call
+        cy.intercept('POST', '**/tips/*/', {
+            statusCode: 200, body: {}
+        }).as('makeTips');
 
         // Group list after editing
         cy.intercept('GET', '**/yards/yard-groups/', {
