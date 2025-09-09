@@ -13,7 +13,8 @@ import ConfirmModal from "../components/ConfirmModal";
 import PreferencesModal from "../components/PreferencesModal";
 import GroupAccordion from "../components/GroupAccordion";
 
-export default function Dashboard() { // TODO: need to change display of yard prefs given new method, persist dates and new prefs on backend
+export default function Dashboard() {
+  // TODO: need to change display of yard prefs given new method, persist dates and new prefs on backend
   const [yards, setYards] = useState([]);
   const [groups, setGroups] = useState([]);
   const [prefsByYard, setPrefsByYard] = useState({});
@@ -219,7 +220,11 @@ export default function Dashboard() { // TODO: need to change display of yard pr
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : null}
-
+      {yards.length === 0 && !loading && !error && (
+        <p className="text-gray-500 text-center mb-2">
+          You have no yards yet. Click "New Yard" to get started!
+        </p>
+      )}
       <div className="rounded-lg pt-4 w-full flex flex-col items-center justify-center space-y-4">
         {[...groups, ungroupedGroup].map((group) => {
           const groupYards =
