@@ -45,6 +45,8 @@ jobs:
           PGDATABASE: LawnHero_db
           PGPORT: 5432
         run: |
+          python manage.py makemigrations --noinput
+          python manage.py migrate --noinput
           pytest
 
 # ORIGINAL TESTS
