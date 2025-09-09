@@ -132,6 +132,7 @@ describe("Testing with Map functionality", () => {
         cy.contains('button', 'Finish').should('be.visible').click();
         cy.contains('button', 'Save').should('be.visible').click();
         cy.wait('@postYard');
+        cy.wait(2000);
         cy.wait('@makeTips');
         cy.wait('@taskList');
         cy.wait('@yardList');
