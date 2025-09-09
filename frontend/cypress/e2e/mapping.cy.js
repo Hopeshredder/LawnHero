@@ -122,11 +122,17 @@ describe("Testing with Map functionality", () => {
             }
         }).as('yardPrefs');
 
+        // Mock AI API call
+        cy.intercept('POST', '**/tips/1/', {
+            statusCode: 200, body: {}
+        }).as('makeTips');
+
 
         // Finish out and save the yard
         cy.contains('button', 'Finish').should('be.visible').click();
         cy.contains('button', 'Save').should('be.visible').click();
         cy.wait('@postYard');
+        cy.wait('@makeTips');
         cy.wait('@taskList');
         cy.wait('@yardList');
         cy.wait('@yardGroupList');
