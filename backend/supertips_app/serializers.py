@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from .models import Yard
+from .models import SuperTips
 
 
 class SuperTipsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Yard
+        model = SuperTips
         fields = "__all__"
 
 

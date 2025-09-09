@@ -1,12 +1,19 @@
 import os
+from django.shortcuts import get_object_or_404
+
+from rest_framework.response import Response
+from rest_framework import status as s
+
 from openai import OpenAI
 
 from .prompt_helpers import build_user_prompt
+from .serializers import SuperTipPromptSerializer
 
 from users_app.views import UserPermissions
 
 from yard_app.models import Yard
-from yard_app.serializers import YardSerializer
+
+from yard_preferences_app.models import Preferences
 
 # Create your views here.
 """
@@ -25,20 +32,49 @@ SYSTEM_PROMPT = (
 )
 
 
-class AISuperTipsView(UserPermissions):
+class SuperTipsView(UserPermissions):
     client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-    def get(self, request, yard_id):
-        data = request.data.copy()
-        yard_info = Yard.objects.get(id=data.get(""))
-        yard_info = YardSerializer(yard_info).data
+    def _get_user_yards(self, request, yard_id):
+        # Ensures that the yard requested belongs to the requesting user
+        return Yard.objects.filter(id=yard_id, user=request.user).first()
 
-        user_prompt = build_user_prompt()
-
-
-class SuperTips(UserPermissions):
     def post(self, request, yard_id):
-        pass
+        # Validate yard ownership
+        yard = self._get_user_yards(request, yard_id)
+        if not yard:
+            return Response(
+                {
+                    "ok": False,
+                    "detail": f"No yard {yard_id} found for user {request.user.id}",
+                },
+                status=s.HTTP_404_NOT_FOUND,
+            )
 
-    def get(self, request, yard_id):
-        pass
+        yard_info = get_object_or_404(Yard, id=yard_id)
+
+        prefs = Preferences.objects.get(yard_id=yard_id)
+
+        # Combine data sets to generate payload
+        payload = {
+            # yard info
+            "yard_name": yard_info.get("yard_name"),
+            "zip_code": yard_info.get("zip_code"),
+            "yard_size": yard_info.get("yard_size"),
+            "soil_type": yard_info.get("soil_type"),
+            "grass_type": yard_info.get("grass_type"),
+            # prefs
+            "watering_interval": prefs.get("watering_interval"),
+            "mowing_interval": prefs.get("mowing_interval"),
+            "watering_rate": prefs.get("watering_rate"),
+        }
+
+        # Run payload through serializer for final validation
+        serializer = SuperTipPromptSerializer(data=payload).is_valid(
+            raise_exception=True
+        )
+
+        # Build user prompt with validated data
+        user_prompt = build_user_prompt(serializer.validated_data)
+
+        return Response({"ok": True})
