@@ -221,7 +221,7 @@ export default function Dashboard() {
         <p className="text-red-500">{error}</p>
       ) : null}
       {yards.length === 0 && !loading && !error && (
-        <p className="text-gray-500 text-center mb-2">
+        <p className="text-gray-500 text-center mt-4">
           You have no yards yet. Click "New Yard" to get started!
         </p>
       )}

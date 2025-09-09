@@ -65,8 +65,8 @@ export default function CustomAccordion({
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
-            flexGrow: 1, 
-            minWidth: 0, 
+            flexGrow: 1,
+            minWidth: 0,
             ml: 1,
           }}
         >
@@ -96,7 +96,13 @@ export default function CustomAccordion({
           },
         }}
       >
-        <div className="flex flex-col gap-2">{content}</div>
+        <div className="flex flex-col gap-2">
+          {typeof content === "string" ? (
+            <Typography>{content}</Typography>
+          ) : (
+            content
+          )}
+        </div>
       </AccordionDetails>
     </Accordion>
   );
