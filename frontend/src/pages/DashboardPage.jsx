@@ -210,7 +210,7 @@ export default function Dashboard() { // TODO: need to change display of yard pr
   };
 
   return (
-    <div className="px-4 sm:px-8 md:px-16 lg:px-24 flex flex-col justify-start min-h-screen w-full">
+    <div className="px-4 sm:px-8 md:px-16 lg:px-24 flex flex-col justify-start min-h-screen w-full pt-6">
       <h1 className="text-2xl font-bold mb-2 text-center">Dashboard</h1>
       <h2 className="text-xl font-bold mb-2 text-center">Yard Groups:</h2>
 

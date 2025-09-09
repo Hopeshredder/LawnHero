@@ -53,7 +53,7 @@ export default function Todo() {
   const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
   return (
-    <div className="flex flex-col items-center px-4 sm:px-8 md:px-16 lg:px-24">
+    <div className="flex flex-col items-center px-4 sm:px-8 md:px-16 lg:px-24 pt-6">
       <h1 className="text-2xl font-bold mb-2 text-center">To-Do List</h1>
       <div className="flex flex-col gap-4 w-full mx-auto mt-4">
         {yards.length === 0 ? (

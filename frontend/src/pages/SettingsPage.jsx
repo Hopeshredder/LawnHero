@@ -117,10 +117,10 @@ export default function Settings() {
   };
 
   return (
-    <div className="px-4 sm:px-8 md:px-16 lg:px-24 min-h-screen py-8">
-      <h1 className="text-2xl font-bold text-center mb-8">Settings</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
-        <div className="space-y-6">
+    <div className="flex flex-col items-center px-4 sm:px-8 md:px-16 lg:px-24 min-h-screen pt-6">
+      <h1 className="text-2xl font-bold mb-6 text-center">Settings</h1>
+      <div className="flex justify-center w-full">
+        <div className="space-y-6 max-w-lg w-full">
           <div className="bg-white rounded-lg shadow-md p-6 border">
             <h2 className="text-lg font-semibold mb-4">Profile Information</h2>
 
@@ -132,13 +132,15 @@ export default function Settings() {
               <div className="space-y-3">
                 <div
                   className="flex justify-between items-center py-2 border-b"
-                  id="emailDiv">
+                  id="emailDiv"
+                >
                   <span className="font-medium text-gray-700">Email:</span>
                   <span className="text-gray-900">{userInfo.email}</span>
                 </div>
                 <div
                   className="flex justify-between items-center py-2 border-b"
-                  id="accountTypeDiv">
+                  id="accountTypeDiv"
+                >
                   <span className="font-medium text-gray-700">
                     Account Type:
                   </span>
@@ -234,7 +236,8 @@ export default function Settings() {
                 type="submit"
                 variant="contained"
                 fullWidth
-                disabled={isUpdating}>
+                disabled={isUpdating}
+              >
                 {isUpdating ? "Updating..." : "Update Profile"}
               </Button>
             </form>
@@ -249,7 +252,8 @@ export default function Settings() {
                 backgroundColor: "#a14525",
                 "&:hover": { backgroundColor: "#c65b3b" },
                 py: 1.5,
-              }}>
+              }}
+            >
               LOGOUT
             </Button>
           </div>

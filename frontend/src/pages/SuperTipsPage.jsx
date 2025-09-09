@@ -39,8 +39,8 @@ export default function SuperTips() {
   };
 
   return (
-    <div className="px-4 sm:px-8 md:px-16 lg:px-24">
-      <h1 className="text-2xl font-bold mb-6 text-center">Super Tips</h1>
+    <div className="px-4 sm:px-8 md:px-16 lg:px-24 pt-6">
+      <h1 className="text-2xl font-bold mb-8 text-center">Super Tips</h1>
       {superTip1 && (
         <CustomAccordion title={superTip1.title} content={superTip1.content} />
       )}
