@@ -13,7 +13,8 @@ import ConfirmModal from "../components/ConfirmModal";
 import PreferencesModal from "../components/PreferencesModal";
 import GroupAccordion from "../components/GroupAccordion";
 
-export default function Dashboard() { // TODO: need to change display of yard prefs given new method, persist dates and new prefs on backend
+export default function Dashboard() {
+  // TODO: need to change display of yard prefs given new method, persist dates and new prefs on backend
   const [yards, setYards] = useState([]);
   const [groups, setGroups] = useState([]);
   const [prefsByYard, setPrefsByYard] = useState({});
@@ -210,15 +211,20 @@ export default function Dashboard() { // TODO: need to change display of yard pr
   };
 
   return (
-    <div className="px-4 sm:px-8 md:px-16 lg:px-24 flex flex-col justify-start min-h-screen w-full">
-      <h1 className="text-2xl font-bold mb-2 text-center">Yard Groups</h1>
+    <div className="px-4 sm:px-8 md:px-16 lg:px-24 flex flex-col justify-start min-h-screen w-full pt-6">
+      <h1 className="text-2xl font-bold mb-2 text-center">Dashboard</h1>
+      <h2 className="text-xl font-bold text-center">Yard Groups:</h2>
 
       {loading ? (
         <p>Loading yards...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : null}
-
+      {yards.length === 0 && !loading && !error && (
+        <p className="text-gray-500 text-center mt-4">
+          You have no yards yet. Click "New Yard" to get started!
+        </p>
+      )}
       <div className="rounded-lg pt-4 w-full flex flex-col items-center justify-center space-y-4">
         {[...groups, ungroupedGroup].map((group) => {
           const groupYards =

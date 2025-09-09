@@ -5,7 +5,8 @@ import Typography from "@mui/material/Typography";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { useState } from "react";
 
-export default function CustomAccordion({ // make text wrap one time then ...
+export default function CustomAccordion({
+  // make text wrap one time then ...
   title,
   content,
   actions,
@@ -14,6 +15,14 @@ export default function CustomAccordion({ // make text wrap one time then ...
   noShadow,
 }) {
   const [expanded, setExpanded] = useState(false);
+
+  function truncateText(text, maxLength = 40) {
+    if (!text) return "";
+    return text.length > maxLength
+      ? text.slice(0, maxLength - 3) + "..."
+      : text;
+  }
+
   return (
     <Accordion
       className="w-full"
@@ -36,31 +45,42 @@ export default function CustomAccordion({ // make text wrap one time then ...
         sx={{
           backgroundColor: "var(--color-accent)",
           minHeight: 56,
-          "&.Mui-expanded": {
-            minHeight: 56,
-          },
+          "&.Mui-expanded": { minHeight: 56 },
           "& .MuiAccordionSummary-content": {
             margin: 0,
-            "&.Mui-expanded": {
-              margin: 0,
-            },
-          },
-          "& .MuiTypography-root": {
-            fontWeight: 600,
-            color: "var(--color-dark)",
+            "&.Mui-expanded": { margin: 0 },
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            width: "100%",
           },
         }}
       >
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {typeof title === "string" ? (
-            <Typography component="span">{title}</Typography>
-          ) : (
-            title
-          )}
-        </div>
+        {/* Title container */}
+        <Typography
+          component="span"
+          sx={{
+            fontWeight: 600,
+            color: "var(--color-dark)",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            flexGrow: 1,
+            minWidth: 0,
+            ml: 1,
+          }}
+        >
+          {title}
+        </Typography>
 
+        {/* Actions (if expanded) */}
         {expanded && actions && (
-          <div className="flex items-center gap-2 ml-auto mr-2">{actions}</div>
+          <div
+            className="flex items-center gap-2"
+            style={{ flexShrink: 0, marginRight: 8 }}
+          >
+            {actions}
+          </div>
         )}
       </AccordionSummary>
 
@@ -76,7 +96,13 @@ export default function CustomAccordion({ // make text wrap one time then ...
           },
         }}
       >
-        <div className="flex flex-col gap-2">{content}</div>
+        <div className="flex flex-col gap-2">
+          {typeof content === "string" ? (
+            <Typography>{content}</Typography>
+          ) : (
+            content
+          )}
+        </div>
       </AccordionDetails>
     </Accordion>
   );
