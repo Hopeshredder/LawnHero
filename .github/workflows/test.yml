@@ -9,6 +9,7 @@ jobs:
     environment: backend.env
     env:
       DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     services:
       postgres:
         image: postgres:15
