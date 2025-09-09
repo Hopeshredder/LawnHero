@@ -54,312 +54,320 @@ export default function Todo() {
 
   return (
     <div className="flex flex-col items-center px-4 sm:px-8 md:px-16 lg:px-24 pt-6">
-      <h1 className="text-2xl font-bold mb-2 text-center">To-Do List</h1>
-      <div className="flex flex-col gap-4 w-full mx-auto mt-4">
+      <h1 className="text-2xl font-bold mb-8 text-center">To-Do List</h1>
+      <div className="space-y-4 w-full mx-auto">
         {yards.length === 0 ? (
-    <p className="text-center mt-6 text-gray-600">
-      No yards created yet. Go to the Dashboard to add one.
-    </p>
-  ) : (
-        yards.map((yard) => {
-          const tasks = tasksByYard[yard.id] || [];
+          <p className="text-center mt-6 text-gray-600">
+            No yards created yet. Go to the Dashboard to add one.
+          </p>
+        ) : (
+          yards.map((yard) => {
+            const tasks = tasksByYard[yard.id] || [];
 
-          const limit = pastLimitByYard[yard.id] ?? 5;
+            const limit = pastLimitByYard[yard.id] ?? 5;
 
-          const past = (() => {
-            const allPast = tasks.filter((t) => t.day_scheduled < today);
+            const past = (() => {
+              const allPast = tasks.filter((t) => t.day_scheduled < today);
 
-            // split overdue vs completed
-            const overdue = allPast
-              .filter((t) => !t.day_completed)
+              // split overdue vs completed
+              const overdue = allPast
+                .filter((t) => !t.day_completed)
+                .sort(
+                  (a, b) =>
+                    new Date(b.day_scheduled) - new Date(a.day_scheduled)
+                ); // DESC
+
+              const completed = allPast
+                .filter((t) => t.day_completed)
+                .sort(
+                  (a, b) =>
+                    new Date(b.day_scheduled) - new Date(a.day_scheduled)
+                ); // DESC
+
+              // combine, limit to 10
+              return [...overdue, ...completed].slice(0, limit);
+            })();
+
+            const futureLimit = futureLimitByYard[yard.id] ?? 5;
+
+            const todayAndFuture = tasks
+              .filter((t) => t.day_scheduled >= today)
               .sort(
-                (a, b) => new Date(b.day_scheduled) - new Date(a.day_scheduled)
-              ); // DESC
+                (a, b) => new Date(a.day_scheduled) - new Date(b.day_scheduled)
+              ) // soonest first
+              .slice(0, futureLimit);
 
-            const completed = allPast
-              .filter((t) => t.day_completed)
-              .sort(
-                (a, b) => new Date(b.day_scheduled) - new Date(a.day_scheduled)
-              ); // DESC
-
-            // combine, limit to 10
-            return [...overdue, ...completed].slice(0, limit);
-          })();
-
-          const futureLimit = futureLimitByYard[yard.id] ?? 5;
-
-          const todayAndFuture = tasks
-            .filter((t) => t.day_scheduled >= today)
-            .sort(
-              (a, b) => new Date(a.day_scheduled) - new Date(b.day_scheduled)
-            ) // soonest first
-            .slice(0, futureLimit);
-
-          const content = (
-            <div>
-              {tasks.length >= 0 && (
-                <div id="addTasks" className="my-2">
-                  <Button
-                    onClick={() => {
-                      setActiveYard(yard.id);
-                      setOpenModal(true);
-                    }}
-                    className="w-full" // make button full width
-                  >
-                    <div className="flex w-full justify-between items-center">
-                      <span className="text-left">
-                        <AddCircleOutlineIcon />
-                        New Task
-                      </span>
-                    </div>
-                  </Button>
-                  {tasks.filter((t) => t.day_scheduled >= today).length >
-                    todayAndFuture.length && (
+            const content = (
+              <div>
+                {tasks.length >= 0 && (
+                  <div id="addTasks" className="my-2">
                     <Button
-                      onClick={() =>
-                        setFutureLimitByYard((prev) => ({
-                          ...prev,
-                          [yard.id]: (prev[yard.id] ?? 5) + 5,
-                        }))
-                      }
-                      className="mt-2 w-full"
+                      onClick={() => {
+                        setActiveYard(yard.id);
+                        setOpenModal(true);
+                      }}
+                      className="w-full" // make button full width
                     >
-                      Show next 5 future tasks
+                      <div className="flex w-full justify-between items-center">
+                        <span className="text-left">
+                          <AddCircleOutlineIcon />
+                          New Task
+                        </span>
+                      </div>
                     </Button>
-                  )}
+                    {tasks.filter((t) => t.day_scheduled >= today).length >
+                      todayAndFuture.length && (
+                      <Button
+                        onClick={() =>
+                          setFutureLimitByYard((prev) => ({
+                            ...prev,
+                            [yard.id]: (prev[yard.id] ?? 5) + 5,
+                          }))
+                        }
+                        className="mt-2 w-full"
+                      >
+                        Show next 5 future tasks
+                      </Button>
+                    )}
+                  </div>
+                )}
+                <div
+                  className="flex items-center p-2 mb-1 font-semibold text-sm border rounded shadow-sm"
+                  style={{ backgroundColor: "var(--color-light)" }}
+                >
+                  <div className="w-6"></div> {/* checkbox placeholder */}
+                  <div className="flex-1">Task</div>
+                  <div className="w-20 text-right">Scheduled</div>
+                  <div className="w-20 text-right">Completed</div>
+                  <div className="w-4"></div>
                 </div>
-              )}
-              <div
-                className="flex items-center p-2 mb-1 font-semibold text-sm border rounded shadow-sm"
-                style={{ backgroundColor: "var(--color-light)" }}
-              >
-                <div className="w-6"></div> {/* checkbox placeholder */}
-                <div className="flex-1">Task</div>
-                <div className="w-20 text-right">Scheduled</div>
-                <div className="w-20 text-right">Completed</div>
-                <div className="w-4"></div>
-              </div>
 
-              {[...todayAndFuture].reverse().map((t) => {
-                return (
-                  <div
-                    id="futureTasks"
-                    key={t.id}
-                    className="p-2 border rounded mb-1 shadow-sm flex items-center gap-2"
-                    style={{ backgroundColor: "var(--color-lightest)" }}
-                  >
-                    {/* Checkbox */}
-                    <input
-                      type="checkbox"
-                      checked={!!t.day_completed}
-                      onChange={async (e) => {
-                        const completed = e.target.checked
-                          ? new Date().toISOString().split("T")[0]
-                          : null;
+                {[...todayAndFuture].reverse().map((t) => {
+                  return (
+                    <div
+                      id="futureTasks"
+                      key={t.id}
+                      className="p-2 border rounded mb-1 shadow-sm flex items-center gap-2"
+                      style={{ backgroundColor: "var(--color-lightest)" }}
+                    >
+                      {/* Checkbox */}
+                      <input
+                        type="checkbox"
+                        checked={!!t.day_completed}
+                        onChange={async (e) => {
+                          const completed = e.target.checked
+                            ? new Date().toISOString().split("T")[0]
+                            : null;
 
-                        setTasksByYard((prev) => ({
-                          ...prev,
-                          [yard.id]: prev[yard.id].map((task) =>
-                            task.id === t.id
-                              ? { ...task, day_completed: completed }
-                              : task
-                          ),
-                        }));
-
-                        try {
-                          await updateTask(t.id, { day_completed: completed });
-                        } catch (err) {
-                          console.error("Failed to update task:", err);
                           setTasksByYard((prev) => ({
                             ...prev,
                             [yard.id]: prev[yard.id].map((task) =>
                               task.id === t.id
-                                ? { ...task, day_completed: t.day_completed }
+                                ? { ...task, day_completed: completed }
                                 : task
                             ),
                           }));
-                          alert("Failed to update task completion");
-                        }
-                      }}
-                      className="w-5 h-5"
-                      style={{ accentColor: "var(--color-medium)" }}
-                    />
 
-                    {/* Task name (fills space between checkbox and dates) */}
-                    <span
-                      className={`truncate flex-1 ${
-                        t.auto_generated ? "underline" : ""
+                          try {
+                            await updateTask(t.id, {
+                              day_completed: completed,
+                            });
+                          } catch (err) {
+                            console.error("Failed to update task:", err);
+                            setTasksByYard((prev) => ({
+                              ...prev,
+                              [yard.id]: prev[yard.id].map((task) =>
+                                task.id === t.id
+                                  ? { ...task, day_completed: t.day_completed }
+                                  : task
+                              ),
+                            }));
+                            alert("Failed to update task completion");
+                          }
+                        }}
+                        className="w-5 h-5"
+                        style={{ accentColor: "var(--color-medium)" }}
+                      />
+
+                      {/* Task name (fills space between checkbox and dates) */}
+                      <span
+                        className={`truncate flex-1 ${
+                          t.auto_generated ? "underline" : ""
+                        }`}
+                      >
+                        {t.activity_type}
+                      </span>
+
+                      {/* Scheduled + Completed (exact width) */}
+                      <span className="text-right font-mono w-[5ch]">
+                        {t.day_scheduled.split("-").slice(1).join("/")}
+                      </span>
+                      <span className="text-right font-mono w-[5ch]">
+                        {t.day_completed
+                          ? t.day_completed.split("-").slice(1).join("/")
+                          : ""}
+                      </span>
+
+                      {/* Edit/Delete icons */}
+                      <div className="flex gap-2 ml-1 flex-shrink-0">
+                        <EditIcon
+                          fontSize="small"
+                          onClick={() => handleEditTask(t)}
+                        />
+                        <DeleteForeverIcon
+                          fontSize="small"
+                          color="error"
+                          onClick={() => {
+                            setTaskToDelete(t);
+                            setConfirmOpen(true);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Today Header */}
+                <div
+                  className="p-2 mb-1 flex items-center gap-2 border rounded shadow-sm"
+                  style={{ backgroundColor: "var(--color-medium)" }}
+                >
+                  {/* Left: label */}
+                  <div className="flex-1 flex items-center justify-between ml-2">
+                    <span className="truncate font-semibold">Today</span>
+                    <span className="ml-2 flex-shrink-0 font-mono">
+                      {new Date().toLocaleDateString("en-US", {
+                        month: "2-digit",
+                        day: "2-digit",
+                      })}
+                    </span>
+                  </div>
+
+                  {/* Placeholder for icons to keep date aligned */}
+                  <div className="flex items-center ml-2 flex-shrink-0 mr-12">
+                    <EditIcon style={{ visibility: "hidden" }} />
+                    <DeleteForeverIcon style={{ visibility: "hidden" }} />
+                  </div>
+                </div>
+
+                {past.map((t) => {
+                  const isOverdue = !t.day_completed && t.day_scheduled < today;
+
+                  return (
+                    <div
+                      id="pastTasks"
+                      key={t.id}
+                      className={`relative p-2 border rounded mb-1 shadow-sm flex items-center gap-2 ${
+                        isOverdue ? "bg-red-300" : "var(--color-medium)"
                       }`}
                     >
-                      {t.activity_type}
-                    </span>
+                      {/* Checkbox */}
+                      <input
+                        type="checkbox"
+                        checked={!!t.day_completed}
+                        onChange={async (e) => {
+                          const completed = e.target.checked
+                            ? new Date().toISOString().split("T")[0]
+                            : null;
 
-                    {/* Scheduled + Completed (exact width) */}
-                    <span className="text-right font-mono w-[5ch]">
-                      {t.day_scheduled.split("-").slice(1).join("/")}
-                    </span>
-                    <span className="text-right font-mono w-[5ch]">
-                      {t.day_completed
-                        ? t.day_completed.split("-").slice(1).join("/")
-                        : ""}
-                    </span>
-
-                    {/* Edit/Delete icons */}
-                    <div className="flex gap-2 ml-1 flex-shrink-0">
-                      <EditIcon
-                        fontSize="small"
-                        onClick={() => handleEditTask(t)}
-                      />
-                      <DeleteForeverIcon
-                        fontSize="small"
-                        color="error"
-                        onClick={() => {
-                          setTaskToDelete(t);
-                          setConfirmOpen(true);
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* Today Header */}
-              <div
-                className="p-2 mb-1 flex items-center gap-2 border rounded shadow-sm"
-                style={{ backgroundColor: "var(--color-medium)" }}
-              >
-                {/* Left: label */}
-                <div className="flex-1 flex items-center justify-between ml-2">
-                  <span className="truncate font-semibold">Today</span>
-                  <span className="ml-2 flex-shrink-0 font-mono">
-                    {new Date().toLocaleDateString("en-US", {
-                      month: "2-digit",
-                      day: "2-digit",
-                    })}
-                  </span>
-                </div>
-
-                {/* Placeholder for icons to keep date aligned */}
-                <div className="flex items-center ml-2 flex-shrink-0 mr-12">
-                  <EditIcon style={{ visibility: "hidden" }} />
-                  <DeleteForeverIcon style={{ visibility: "hidden" }} />
-                </div>
-              </div>
-
-              {past.map((t) => {
-                const isOverdue = !t.day_completed && t.day_scheduled < today;
-
-                return (
-                  <div
-                    id="pastTasks"
-                    key={t.id}
-                    className={`relative p-2 border rounded mb-1 shadow-sm flex items-center gap-2 ${
-                      isOverdue ? "bg-red-300" : "var(--color-medium)"
-                    }`}
-                  >
-                    {/* Checkbox */}
-                    <input
-                      type="checkbox"
-                      checked={!!t.day_completed}
-                      onChange={async (e) => {
-                        const completed = e.target.checked
-                          ? new Date().toISOString().split("T")[0]
-                          : null;
-
-                        setTasksByYard((prev) => ({
-                          ...prev,
-                          [yard.id]: prev[yard.id].map((task) =>
-                            task.id === t.id
-                              ? { ...task, day_completed: completed }
-                              : task
-                          ),
-                        }));
-
-                        try {
-                          await updateTask(t.id, { day_completed: completed });
-                        } catch (err) {
-                          console.error("Failed to update task:", err);
                           setTasksByYard((prev) => ({
                             ...prev,
                             [yard.id]: prev[yard.id].map((task) =>
                               task.id === t.id
-                                ? { ...task, day_completed: t.day_completed }
+                                ? { ...task, day_completed: completed }
                                 : task
                             ),
                           }));
-                          alert("Failed to update task completion");
-                        }
-                      }}
-                      className="w-5 h-5"
-                      style={{ accentColor: "var(--color-medium)" }}
-                    />
 
-                    {/* Task name (fills space between checkbox and dates) */}
-                    <span className={`truncate flex-1 ${
-                        t.auto_generated ? "underline" : ""
-                      }`}>
-                      {t.activity_type}
-                    </span>
-
-                    {/* Scheduled + Completed (exact width, monospace for alignment) */}
-                    <span className="text-right font-mono w-[5ch]">
-                      {t.day_scheduled.split("-").slice(1).join("/")}
-                    </span>
-                    <span className="text-right font-mono w-[5ch]">
-                      {t.day_completed
-                        ? t.day_completed.split("-").slice(1).join("/")
-                        : ""}
-                    </span>
-
-                    {/* Edit/Delete icons */}
-                    <div className="flex gap-2 ml-1 flex-shrink-0">
-                      <EditIcon
-                        fontSize="small"
-                        onClick={() => handleEditTask(t)}
-                      />
-                      <DeleteForeverIcon
-                        fontSize="small"
-                        color="error"
-                        onClick={() => {
-                          setTaskToDelete(t);
-                          setConfirmOpen(true);
+                          try {
+                            await updateTask(t.id, {
+                              day_completed: completed,
+                            });
+                          } catch (err) {
+                            console.error("Failed to update task:", err);
+                            setTasksByYard((prev) => ({
+                              ...prev,
+                              [yard.id]: prev[yard.id].map((task) =>
+                                task.id === t.id
+                                  ? { ...task, day_completed: t.day_completed }
+                                  : task
+                              ),
+                            }));
+                            alert("Failed to update task completion");
+                          }
                         }}
+                        className="w-5 h-5"
+                        style={{ accentColor: "var(--color-medium)" }}
                       />
-                    </div>
-                  </div>
-                );
-              })}
-              {tasks.filter((t) => t.day_scheduled < today).length >
-                past.length && (
-                <Button
-                  onClick={() =>
-                    setPastLimitByYard((prev) => ({
-                      ...prev,
-                      [yard.id]: (prev[yard.id] ?? 5) + 5, // adjust how many more to show here
-                    }))
-                  }
-                  className="mt-2 w-full"
-                >
-                  Show next 5 tasks
-                </Button>
-              )}
-            </div>
-          );
 
-          return (
-            <CustomAccordion
-              key={yard.id}
-              title={yard.yard_name}
-              content={content}
-              onChange={(e, expanded) => {
-                if (expanded && !tasksByYard[yard.id]) {
-                  fetchTasksForYard(yard.id);
-                }
-              }}
-            />
-          );
-        })
-      )}
+                      {/* Task name (fills space between checkbox and dates) */}
+                      <span
+                        className={`truncate flex-1 ${
+                          t.auto_generated ? "underline" : ""
+                        }`}
+                      >
+                        {t.activity_type}
+                      </span>
+
+                      {/* Scheduled + Completed (exact width, monospace for alignment) */}
+                      <span className="text-right font-mono w-[5ch]">
+                        {t.day_scheduled.split("-").slice(1).join("/")}
+                      </span>
+                      <span className="text-right font-mono w-[5ch]">
+                        {t.day_completed
+                          ? t.day_completed.split("-").slice(1).join("/")
+                          : ""}
+                      </span>
+
+                      {/* Edit/Delete icons */}
+                      <div className="flex gap-2 ml-1 flex-shrink-0">
+                        <EditIcon
+                          fontSize="small"
+                          onClick={() => handleEditTask(t)}
+                        />
+                        <DeleteForeverIcon
+                          fontSize="small"
+                          color="error"
+                          onClick={() => {
+                            setTaskToDelete(t);
+                            setConfirmOpen(true);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+                {tasks.filter((t) => t.day_scheduled < today).length >
+                  past.length && (
+                  <Button
+                    onClick={() =>
+                      setPastLimitByYard((prev) => ({
+                        ...prev,
+                        [yard.id]: (prev[yard.id] ?? 5) + 5, // adjust how many more to show here
+                      }))
+                    }
+                    className="mt-2 w-full"
+                  >
+                    Show next 5 tasks
+                  </Button>
+                )}
+              </div>
+            );
+
+            return (
+              <CustomAccordion
+                key={yard.id}
+                title={yard.yard_name}
+                content={content}
+                onChange={(e, expanded) => {
+                  if (expanded && !tasksByYard[yard.id]) {
+                    fetchTasksForYard(yard.id);
+                  }
+                }}
+              />
+            );
+          })
+        )}
       </div>
 
       {/* Task modal */}

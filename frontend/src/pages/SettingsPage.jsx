@@ -118,7 +118,7 @@ export default function Settings() {
 
   return (
     <div className="flex flex-col items-center px-4 sm:px-8 md:px-16 lg:px-24 min-h-screen pt-6">
-      <h1 className="text-2xl font-bold mb-6 text-center">Settings</h1>
+      <h1 className="text-2xl font-bold mb-8 text-center">Settings</h1>
       <div className="flex justify-center w-full">
         <div className="space-y-6 max-w-lg w-full">
           <div className="bg-white rounded-lg shadow-md p-6 border">
