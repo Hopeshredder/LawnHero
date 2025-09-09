@@ -5,6 +5,7 @@ import { getYardList } from "../Api";
 
 export default function SuperTips() {
   const [yards, setYards] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchYards = async () => {
@@ -13,6 +14,8 @@ export default function SuperTips() {
         setYards(res);
       } catch (err) {
         console.error("Failed to fetch yards:", err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchYards();
@@ -43,13 +46,16 @@ export default function SuperTips() {
       )}
 
       <div className="space-y-4 mt-4">
-        {/* Map all yards */}
-        {yards.length > 0 ? (
+        {loading ? (
+          <p>Loading yards...</p>
+        ) : yards.length > 0 ? (
           yards.map((yard) => (
             <SuperTipsYardAccordion key={yard.id} yard={yard} />
           ))
         ) : (
-          <p>Loading yards...</p>
+          <p className="text-center mt-6 text-gray-600">
+            No yards created yet. Go to the Dashboard to add one.
+          </p>
         )}
       </div>
     </div>

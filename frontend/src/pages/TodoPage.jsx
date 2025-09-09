@@ -56,7 +56,12 @@ export default function Todo() {
     <div className="flex flex-col items-center px-4 sm:px-8 md:px-16 lg:px-24">
       <h1 className="text-2xl font-bold mb-2 text-center">To-Do List</h1>
       <div className="flex flex-col gap-4 w-full mx-auto mt-4">
-        {yards.map((yard) => {
+        {yards.length === 0 ? (
+    <p className="text-center mt-6 text-gray-600">
+      No yards created yet. Go to the Dashboard to add one.
+    </p>
+  ) : (
+        yards.map((yard) => {
           const tasks = tasksByYard[yard.id] || [];
 
           const limit = pastLimitByYard[yard.id] ?? 5;
@@ -353,7 +358,8 @@ export default function Todo() {
               }}
             />
           );
-        })}
+        })
+      )}
       </div>
 
       {/* Task modal */}

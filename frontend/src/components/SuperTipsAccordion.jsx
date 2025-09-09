@@ -57,7 +57,7 @@ export default function SuperTipsYardAccordion({ yard }) {
       content={
         <>
           {/* Query AI */}
-          <div className="mt-2">
+          {/* <div className="mt-2">
             <input
               type="text"
               placeholder="Ask AI a question about your yard"
@@ -81,7 +81,7 @@ export default function SuperTipsYardAccordion({ yard }) {
             >
               Ask AI
             </button>
-          </div>
+          </div> */}
 
           {/* Filter Input and Toggle Button */}
           <div className="mt-4 flex items-center justify-between gap-2">
