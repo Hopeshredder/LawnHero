@@ -14,6 +14,7 @@ import Todo from "./pages/TodoPage";
 import SuperTips from "./pages/SuperTipsPage";
 import Dashboard from "./pages/DashboardPage";
 import Settings from "./pages/SettingsPage";
+import Dallas from "./pages/404";
 
 const router = createBrowserRouter([
   // Public routes (no auth required)
@@ -48,6 +49,7 @@ const router = createBrowserRouter([
       },
     ],
   },
+  { path: "/404", element: <Dallas /> },
 
   { path: "*", element: <NotFound /> },
 ]);
