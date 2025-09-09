@@ -17,7 +17,7 @@ class SuperTipPromptSerializer(serializers.Serializer):
     grass_type = serializers.CharField(max_length=20)
     watering_interval = serializers.FloatField(min_value=0.5, max_value=7)
     watering_rate = serializers.FloatField(min_value=0.5, max_value=5)
-    mowing_interval = serializers.IntegerField(min_value=0, max_value=30)
+    mowing_interval = serializers.IntegerField(min_value=1, max_value=30)
 
     def validate(self, attrs):
         for key in ("soil_type", "grass_type"):

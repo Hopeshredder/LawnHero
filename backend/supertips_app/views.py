@@ -51,22 +51,20 @@ class SuperTipsView(UserPermissions):
                 status=s.HTTP_404_NOT_FOUND,
             )
 
-        yard_info = get_object_or_404(Yard, id=yard_id)
-
         prefs = Preferences.objects.get(yard_id=yard_id)
 
         # Combine data sets to generate payload
         payload = {
             # yard info
-            "yard_name": yard_info.get("yard_name"),
-            "zip_code": yard_info.get("zip_code"),
-            "yard_size": yard_info.get("yard_size"),
-            "soil_type": yard_info.get("soil_type"),
-            "grass_type": yard_info.get("grass_type"),
+            "yard_name": yard.yard_name,
+            "zip_code": yard.zip_code,
+            "yard_size": yard.yard_size,
+            "soil_type": yard.soil_type,
+            "grass_type": yard.grass_type,
             # prefs
-            "watering_interval": prefs.get("watering_interval"),
-            "mowing_interval": prefs.get("mowing_interval"),
-            "watering_rate": prefs.get("watering_rate"),
+            "watering_interval": prefs.watering_interval,
+            "mowing_interval": prefs.mowing_interval,
+            "watering_rate": prefs.watering_rate,
         }
 
         # Run payload through serializer for final validation

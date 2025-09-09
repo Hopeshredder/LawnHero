@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import SuperTips
+from .views import SuperTipsView
 
 urlpatterns = [
-    path("<int:yard_id>/", SuperTips.as_view()),
+    path("<int:yard_id>/", SuperTipsView.as_view()),
 ]
