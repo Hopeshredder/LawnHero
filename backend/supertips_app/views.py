@@ -7,7 +7,9 @@ from rest_framework import status as s
 from openai import OpenAI
 
 from .prompt_helpers import build_user_prompt
-from .serializers import SuperTipPromptSerializer
+from .models import SuperTips as SuperTipsModel
+from .serializers import SuperTipPromptSerializer, SuperTipsSerializer
+
 
 from users_app.views import UserPermissions
 
@@ -68,11 +70,34 @@ class SuperTipsView(UserPermissions):
         }
 
         # Run payload through serializer for final validation
-        serializer = SuperTipPromptSerializer(data=payload).is_valid(
-            raise_exception=True
-        )
+        serialized = SuperTipPromptSerializer(data=payload)
+        serialized.is_valid(raise_exception=True)
 
         # Build user prompt with validated data
-        user_prompt = build_user_prompt(serializer.validated_data)
+        user_prompt = build_user_prompt(serialized.validated_data)
 
-        return Response({"ok": True})
+        # Make OpenAI call with SystemPrompt and userPrompt
+        resp = self.client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.4,
+        )
+        text = resp.choices[0].message.content.strip()
+
+        # TODO: IMPLETMENT parse_supertips in prompt_helpers.py
+        # returns a dict of category tips
+        parsed = parse_supertips(text)
+
+        # Persist tips to db
+        tip = SuperTipsModel.objects.create(yard=yard, **parsed)
+
+        return Response(
+            {
+                "success": True,
+                "detail": f"Supertips created for {yard_id}.",
+            },
+            status=s.HTTP_201_CREATED,
+        )
