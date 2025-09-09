@@ -6,7 +6,7 @@ from rest_framework import status as s
 
 from openai import OpenAI
 
-from .prompt_helpers import build_user_prompt
+from .prompt_helpers import build_user_prompt, parse_supertips
 from .models import SuperTips as SuperTipsModel
 from .serializers import SuperTipPromptSerializer, SuperTipsSerializer
 
@@ -31,6 +31,38 @@ Call from frontend to POST
 """
 SYSTEM_PROMPT = (
     # TODO: ADD SYSTEM PROMPT
+    """ You are LawnHero, a concise, practical lawn‑care assistant for homeowners. Your job is to transform the provided 'Yard Facts' into actionable, year‑round guidance tailored to location (zip code), grass type, soil type, yard size, and owner preferences.
+
+Output exactly seven sections with these labels, in this order:
+
+Watering:
+Tools/Equipment:
+Common Lawn Problems:
+Mowing:
+Fertilizing:
+Aerating:
+Dethatching:
+
+
+Rules:
+
+Write 3–4 full sentences per section.
+No markdown, no lists/bullets, no emojis.
+No brand or manufacturer names, and no URLs.
+Use US units: inches of water per week, lbs of nitrogen per 1,000 sq ft, mowing height in inches, intervals in days/weeks.
+Prefer safe, non‑chemical practices first; if chemicals are mentioned, keep general and non‑branded.
+If grass_type or soil_type is 'Unknown', infer the predominant type for the zip code; if uncertain, give broadly applicable best practices.
+Provide year‑round guidance; mention season‑specific timing only when it’s critical, briefly.
+Be specific and quantified where possible; avoid vague terms like 'often' or 'regularly' without numbers.
+If the owner preferences do not align with the ideal practices for the yard in question, suggest updated intervals and rates, if required.
+Do not refer to yourself or to the prompt; just provide the guidance.
+
+
+Assumptions:
+'watering_rate' is total inches per week.
+'watering_interval' is days between watering sessions; split recommended weekly water across sessions based on soil type.
+'mowing_interval' is the typical days between mows, adjusted for growth rate. "
+"""
 )
 
 
@@ -87,17 +119,31 @@ class SuperTipsView(UserPermissions):
         )
         text = resp.choices[0].message.content.strip()
 
-        # TODO: IMPLETMENT parse_supertips in prompt_helpers.py
         # returns a dict of category tips
         parsed = parse_supertips(text)
 
         # Persist tips to db
-        tip = SuperTipsModel.objects.create(yard=yard, **parsed)
+        tip, _ = SuperTipsModel.objects.update_or_create(yard=yard, defaults=parsed)
 
         return Response(
             {
                 "success": True,
-                "detail": f"Supertips created for {yard_id}.",
+                "detail": f"Supertips created for yard {yard_id}.",
             },
             status=s.HTTP_201_CREATED,
         )
+
+    def get(self, request, yard_id):
+        yard = self._get_user_yards(request, yard_id)
+        if not yard:
+            return Response(
+                {
+                    "ok": False,
+                    "detail": f"No yard {yard_id} found for user {request.user.id}",
+                },
+                status=s.HTTP_404_NOT_FOUND,
+            )
+        tips = SuperTipsModel.objects.get(yard_id=yard_id)
+        s_tips = SuperTipsSerializer(tips).data
+
+        return Response(s_tips, status=s.HTTP_200_OK)

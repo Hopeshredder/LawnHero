@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "yard_preferences_app",
     "yard_app",
     "task_app",
+    "supertips_app",
 ]
 
 MIDDLEWARE = [
