@@ -1,0 +1,45 @@
+### Login
+# @name login
+POST http://127.0.0.1:8000/api/v1/users/login/ HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "jay-cruz@outlook.com",
+  "password": "6969"
+}
+
+### Get User Info
+GET http://127.0.0.1:8000/api/v1/users/info/ HTTP/1.1
+Content-Type: application/json
+Cookie: {{login.response.headers.Set-Cookie}}
+
+### Update User Email and Password
+POST http://127.0.0.1:8000/api/v1/users/info/ HTTP/1.1
+Content-Type: application/json
+Cookie: {{login.response.headers.Set-Cookie}}
+
+{
+  "current_password": "6969",
+  "new_email": "jay-cruz02@outlook.com",
+  "new_password": "80808080"
+}
+
+### Update Only Email
+POST http://127.0.0.1:8000/api/v1/users/info/ HTTP/1.1
+Content-Type: application/json
+Cookie: {{login.response.headers.Set-Cookie}}
+
+{
+  "current_password": "80808080",
+  "new_email": "kms-100@outlook.com"
+}
+
+### Update Only Password
+POST http://127.0.0.1:8000/api/v1/users/info/ HTTP/1.1
+Content-Type: application/json
+Cookie: {{login.response.headers.Set-Cookie}}
+
+{
+  "current_password": "80808080",
+  "new_password": "5007157215"
+}
