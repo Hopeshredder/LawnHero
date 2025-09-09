@@ -26,6 +26,7 @@
     "axios": "^1.11.0",
     "leaflet": "^1.9.4",
     "leaflet-draw": "^1.0.4",
+    "lottie-react": "^2.4.1",
     "react": "^19.1.1",
     "react-day-picker": "^9.9.0",
     "react-dom": "^19.1.1",

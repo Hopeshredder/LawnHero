@@ -35,7 +35,7 @@ SYSTEM_PROMPT = (
 
 Output exactly seven sections with these labels, in this order ( !!IMPORTANT!!):
 
-Watering:
+Watering: <ai recommendation>
 Tools/Equipment:
 Common Lawn Problems:
 Mowing:
