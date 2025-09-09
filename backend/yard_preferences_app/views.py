@@ -56,11 +56,10 @@ class YardPreferences(UserPermissions):
                 {"ok": False, "errors": serializer.errors},
                 status=s.HTTP_400_BAD_REQUEST,
             )
-        
+
         # Since the id and yard fields are set to read-only to avoid users updating someone else's prefs,
         # the `yard=yard` tells the serializer to use the pre-fetched yard when creating the instance
         serializer.save(yard=yard)
-
 
         return Response(
             {"ok": True, "detail": "Preferences created" if created else "Preferences updates"},

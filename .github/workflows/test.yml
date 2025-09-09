@@ -9,6 +9,7 @@ jobs:
     environment: backend.env
     env:
       DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     services:
       postgres:
         image: postgres:15
@@ -44,6 +45,8 @@ jobs:
           PGDATABASE: LawnHero_db
           PGPORT: 5432
         run: |
+          python manage.py makemigrations --noinput
+          python manage.py migrate --noinput
           pytest
 
 # ORIGINAL TESTS
