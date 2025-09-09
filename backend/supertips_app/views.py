@@ -117,7 +117,9 @@ class SuperTipsView(UserPermissions):
             ],
             temperature=0.4,
         )
-        text = resp.choices[0].message.content.strip()
+        choice = resp.choices[0]
+        message = choice.message
+        text = message.content.strip()
 
         # returns a dict of category tips
         parsed = parse_supertips(text)

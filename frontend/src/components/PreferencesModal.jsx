@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Modal, Box, Typography, TextField, Button } from "@mui/material";
-import { updatePrefs } from "../Api";
+import { updatePrefs, CreateTips } from "../Api";
 import { generateTasksForYard } from "./generateTasksForYard";
 import SeasonalDatePicker from "./SeasonalDatePicker";
 import NumericInputField from "./NumericInputField";
@@ -188,6 +188,7 @@ export default function PreferencesModal({
             },
           }
         );
+        await CreateTips(yardId);
       }
 
       onPreferencesSaved?.();

@@ -17,6 +17,7 @@ import {
   addYardToYardGroup,
   removeYardGroup,
   fetchLatLonFromZip,
+  CreateTips,
 } from "../Api";
 import ConfirmModal from "../components/ConfirmModal";
 import MapMyYard from "./MapMyYard";
@@ -152,6 +153,7 @@ export default function NewYardModal({
       if (!customizePrefs) {
         if (!yard?.id) {
           await generateTasksForYard(savedYard);
+          await CreateTips(savedYard.id);
         }
       }
 
