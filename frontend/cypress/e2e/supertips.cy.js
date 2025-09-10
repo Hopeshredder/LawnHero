@@ -15,7 +15,7 @@ describe("Dashboard page empty DB", () => {
     // Subtest to check empty dashboard page loads correctly
     it("Visits dashboard page with empty DB", () => {
         cy.get('h1').contains('Super Tips').should('be.visible');
-        cy.get('span').contains('Super Tip 1: Yard Creation').should('be.visible');
-        cy.get('p').contains('Loading yards...').should('be.visible');
+        cy.get('span').contains('Super Tip 1: Create a Yard').should('be.visible');
+        cy.get('p').contains('No yards created yet. Go to the Dashboard to add one.').should('be.visible');
     })
 })
