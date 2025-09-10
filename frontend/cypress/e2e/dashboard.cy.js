@@ -20,7 +20,7 @@ describe("Dashboard page empty DB", () => {
 
     // Subtest to check empty dashboard page loads correctly
     it("Visits dashboard page with empty DB", () => {
-        cy.get('h1').contains('Yard Groups').should('be.visible');
+        cy.get('h2').contains('Yard Groups:').should('be.visible');
         cy.get('button').contains('New Yard').should('be.visible');
         cy.get('h3').should('not.exist');
     })
@@ -400,7 +400,7 @@ describe("Tests Group creation and deletion", () => {
         }).as('makeTips');
 
         // Open new task modal
-        cy.get('h1').contains('Yard Groups').should('be.visible');
+        cy.get('h2').contains('Yard Groups:').should('be.visible');
         cy.get('button').contains('New Yard').should('be.visible').click();
         
         // Enter values for a new test
